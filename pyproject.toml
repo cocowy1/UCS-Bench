@@ -1,0 +1,102 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "directme"
+version = "0.7.0"
+description = "DirectMe: user-centric continual spatial intelligence for egocentric video streams"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+  {name = "DirectMe Community"}
+]
+keywords = [
+  "egocentric-video",
+  "scene-graph",
+  "spatial-memory",
+  "visual-question-answering",
+  "continual-mapping",
+  "embodied-ai",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=1.23",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "ruff>=0.6.0",
+  "mypy>=1.8",
+  "pre-commit>=3.5",
+]
+video = [
+  "opencv-python>=4.8",
+  "pillow>=10.0",
+]
+# v0.4: lightweight video decoder for `directme ingest --video`.
+# Two binaries (~5 MB) + pure-Python wrapper. Much smaller than opencv if
+# you only need decoding, not full image processing.
+ingest = [
+  "imageio>=2.31",
+  "imageio-ffmpeg>=0.4.9",
+]
+viz = [
+  "matplotlib>=3.7",
+]
+api = [
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+]
+vlm = [
+  "openai>=1.0",
+]
+# Heavy perception model deps. SAM 2 and Depth Anything 3 install from source —
+# see docs/adapter_guide.md.
+perception = [
+  "torch>=2.1",
+  "ultralytics>=8.3",
+  "opencv-python>=4.8",
+]
+
+[project.urls]
+Homepage = "https://github.com/directme-ai/directme"
+Issues = "https://github.com/directme-ai/directme/issues"
+
+[project.scripts]
+directme = "directme.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["directme", "directme.*"]
+exclude = ["tests*", "directme.tests*", "directme.configs*"]
+
+[tool.setuptools.package-data]
+"directme.eval" = ["sample_questions.jsonl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]

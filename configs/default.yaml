@@ -1,0 +1,40 @@
+project:
+  name: directme
+  run_dir: runs/default
+
+stream:
+  fps: 1.0
+  chunk_seconds: 10.0
+  chunk_size_frames: 10
+
+world:
+  reference_frame: Frame_0_World_Origin
+
+mapping:
+  merge_threshold_m: 0.50
+  max_observations_per_node: 128
+  keyframes_per_node: 4
+  nearest_edge_k: 5
+  nearest_edge_max_distance_m: 2.0
+  dynamic_update_alpha: 0.70
+  static_update_alpha: 0.20
+  motion_overwrite_threshold_m: 0.50
+  color_histogram_min_similarity: 0.55
+  semantic_embedding_min_similarity: 0.30
+  track_match_max_gap_frames: 5
+  track_match_max_jump_m: 2.0
+  max_per_frame_jump_m: 5.0
+  place_radius_m: 3.0
+  place_min_members: 1
+
+retrieval:
+  top_k: 8
+  language: zh
+  include_keyframes: true
+  reachable_radius_m: 5.0          # depth-based reachability threshold
+  lateral_tolerance_ratio: 0.20    # |x| <= ratio * max(|z|, 1m) → centered
+
+storage:
+  backend: json                    # one of: json, sqlite
+  sqlite_filename: scene_graph.sqlite
+  json_filename: scene_graph.json
