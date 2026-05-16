@@ -44,7 +44,7 @@ from directme.perception.base import (
     PerceptionBackend,
     VideoFrame,
 )
-from directme.perception.color import dominant_hsv_color, hsv_histogram_from_image_mask
+from directme.perception.color_attributes import dominant_hsv_color, hsv_histogram_from_image_mask
 from directme.perception.scene_classifier import (
     RuleBasedSceneClassifier,
     SceneClassifier,

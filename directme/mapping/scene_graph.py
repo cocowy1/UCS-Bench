@@ -18,7 +18,7 @@ from typing import Any
 
 import numpy as np
 
-from directme.perception.color import (
+from directme.perception.color_attributes import (
     histogram_cosine_similarity,
     normalize_color_name,
 )

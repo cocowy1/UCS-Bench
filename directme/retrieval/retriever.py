@@ -6,7 +6,7 @@ from typing import Any
 
 from directme.geometry.poses import SE3
 from directme.mapping.scene_graph import EntityNode, SceneGraph
-from directme.perception.color import normalize_color_name
+from directme.perception.color_attributes import normalize_color_name
 from directme.retrieval.egocentric import (
     DEFAULT_LATERAL_TOLERANCE_RATIO,
     DEFAULT_REACHABLE_RADIUS_M,
