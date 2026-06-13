@@ -6,7 +6,7 @@ DirectMe is an advanced video understanding framework that integrates state-of-t
 
 ### Prerequisites
 - Anaconda/Miniconda installed on your system
-- NVIDIA GPU with CUDA support (required for running SCAL3R, YOLO-World, and SAM2 models)
+- NVIDIA GPU with CUDA support (required for running DA3/SCAL3R, Grounding-DINO/YOLO-World, and SAM2 models)
 - Minimum 80GB storage space for datasets, pre-trained models, and processing outputs
 
 ### Step-by-Step Installation
