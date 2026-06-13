@@ -40,8 +40,8 @@ Follow the instructions in the model configuration files to download all require
 DirectMe leverages a state-of-the-art multi-modal perception stack (DA3/SCAL3R + Grounding-DINO/YOLO-World + SAM2) to extract rich visual-semantic and geometric information from input videos:
 - **Open-Vocabulary Object Detection & Tracking**: Identifies and tracks custom entities (persons, vehicles, objects) across video frames using YOLO-World with SimpleIoUAppearanceTracker, supporting arbitrary user-specified class lists (implemented in `open_vocab_tracking.py`)
 - **3D Geometry Estimation**: Extracts dense depth maps, camera poses (SE3 transformation matrices), and camera intrinsics via SCAL3R to establish metric 3D spatial relationships in the scene
-- **Attribute Recognition**: Computes quantitative visual attributes for all detected objects, implemented in `composed.py` line 213:
-  - **Color properties**: When segmentation masks are available, extracts the dominant color name, full HSV histogram, and color source
+- **Attribute Recognition**: Computes quantitative visual attributes for all detected objects, implemented in `composed.py` :
+  - **Color properties**: When segmentation masks are available, it extracts the dominant color name, full HSV histogram, and color source
   - **Spatial properties**: 3D camera coordinates (p_cam), 2D bounding box coordinates, and segmentation masks (when SAM2 is enabled)
   - **Detection metadata**: Confidence scores, unique tracking IDs, and keyframe image path references
 - **Scene Classification**: Generates semantic scene tags (e.g., "living room", "kitchen", "office") to establish global scene context
@@ -70,7 +70,7 @@ chunk_perception = backend.process_chunk(frames, chunk_id=0)
 ### 2. 3D Scene Graph Construction (Verified Line-by-Line Implementation)
 Perception outputs are processed by the `OfflineMappingEngine` in [offline_engine.py](file:///data/ywang/my_projects/VideoUnderstanding/Directme/directme/mapping/offline_engine.py) to build a metric 3D scene graph that evolves with the video timeline, implemented in [scene_graph.py](file:///data/ywang/my_projects/VideoUnderstanding/Directme/directme/mapping/scene_graph.py#L537):
 - **Entity Nodes**: [EntityNode](file:///data/ywang/my_projects/VideoUnderstanding/Directme/directme/mapping/scene_graph.py#L320) represents persistent objects with accumulated observations, 3D world coordinates (p_world), semantic labels, attributes, and timestamps
-- **Spatial Edges**: Automatically built between nodes within **2.0 meters** (max_distance_m=2.0 in build_edges()), with "near" relation and exact distance in meters; "in_place" edges connect objects to their containing place nodes (verified in scene_graph.py line 558)
+- **Spatial Edges**: Automatically built between nodes within **2.0 meters** (max_distance_m=2.0 in build_edges()), with "near" relation and exact distance in meters; "in_place" edges connect objects to their containing place nodes.
 - **Place Nodes**: Represent semantic locations (kitchen, living room) to organize the scene hierarchy via place_id assignment
 - **Temporal Merging**: The `upsert_object()` method in [scene_graph.py](file:///data/ywang/my_projects/VideoUnderstanding/Directme/directme/mapping/scene_graph.py#L471) uses tracking IDs and 3D position thresholds to merge observations of the same object across frames, preventing duplicate nodes
 - **Common World Coordinate System**: All entities are projected into a single global coordinate system using SCAL3R's SE3 camera poses to enable spatial reasoning
@@ -100,7 +100,7 @@ For question-answering and retrieval tasks, DirectMe's `GraphRetriever` in [retr
 
 **Query Pipeline (matches retriever.py line-by-line):**
 1. **Query Parsing**: `parse_query()` in [query_parser.py](file:///data/ywang/my_projects/VideoUnderstanding/Directme/directme/retrieval/query_parser.py#L241) converts natural language into a `QueryIntent` object with extracted labels, colors, and room constraints, with native support for both English and Chinese aliases (COLOR_ALIASES, OBJECT_ALIASES, ROOM_ALIASES)
-2. **Temporal Filtering**: Nodes are filtered to only include those first observed before the question's timestamp ("causal retrieval" - prevents using future information for online QA, implemented in retriever.py line 130)
+2. **Temporal Filtering**: Nodes are filtered to only include those first observed before the question's timestamp ("causal retrieval" - prevents using future information for online QA)
 3. **Node Scoring**: `_score_node()` in [retriever.py](file:///data/ywang/my_projects/VideoUnderstanding/Directme/directme/retrieval/retriever.py#L195) ranks matching nodes with the exact scoring scheme verified in code:
    - Label match: +2.0 points (primary matching criteria, any failure returns 0.0)
    - Color match: +1.5 points (verified in query parser color extraction logic, any failure returns 0.0)
