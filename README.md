@@ -26,8 +26,10 @@ conda activate DirectMe
 
 3. Download pre-trained models:
 Follow the instructions in the model configuration files to download all required pre-trained models:
-- SCAL3R checkpoint for depth and SE3 camera pose estimation
-- YOLO-Worldv2 weights for open-vocabulary object detection
+- DepthAnything3 ckpt for DA3NESTED-GIANT-LARGE-1.1
+- SCAL3R checkpoint for depth and SE3 camera pose estimation (Optional)
+- Grounding-Dino weights for open-vocabulary object detection
+- YOLO-Worldv2 weights for open-vocabulary object detection (Optional)
 - SAM2.1 checkpoint for mask refinement (optional but recommended, improves attribute accuracy)
 
 ---
@@ -35,11 +37,11 @@ Follow the instructions in the model configuration files to download all require
 ## 🎯 DirectMe Pipeline: Perception → 3D Scene Graph → QA Retrieval
 
 ### 1. Perception Module Integration (Verified Code Implementation)
-DirectMe leverages a state-of-the-art multi-modal perception stack (SCAL3R + YOLO-World + optional SAM2) to extract rich visual-semantic and geometric information from input videos:
+DirectMe leverages a state-of-the-art multi-modal perception stack (DA3/SCAL3R + Grounding-DINO/YOLO-World + SAM2) to extract rich visual-semantic and geometric information from input videos:
 - **Open-Vocabulary Object Detection & Tracking**: Identifies and tracks custom entities (persons, vehicles, objects) across video frames using YOLO-World with SimpleIoUAppearanceTracker, supporting arbitrary user-specified class lists (implemented in `open_vocab_tracking.py`)
 - **3D Geometry Estimation**: Extracts dense depth maps, camera poses (SE3 transformation matrices), and camera intrinsics via SCAL3R to establish metric 3D spatial relationships in the scene
 - **Attribute Recognition**: Computes quantitative visual attributes for all detected objects, implemented in `composed.py` line 213:
-  - **Color properties**: When segmentation masks are available, extracts dominant color name, full HSV histogram, and color source
+  - **Color properties**: When segmentation masks are available, extracts the dominant color name, full HSV histogram, and color source
   - **Spatial properties**: 3D camera coordinates (p_cam), 2D bounding box coordinates, and segmentation masks (when SAM2 is enabled)
   - **Detection metadata**: Confidence scores, unique tracking IDs, and keyframe image path references
 - **Scene Classification**: Generates semantic scene tags (e.g., "living room", "kitchen", "office") to establish global scene context
