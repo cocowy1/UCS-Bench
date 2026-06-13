@@ -1,3 +1,5 @@
+
+
 # UCS-Bench / DirectMe
 
 **Keep It in Mind: User-Centric Continual Spatial Intelligence Reasoning in Egocentric Video Streams**
@@ -7,6 +9,10 @@
 [![Code](https://img.shields.io/badge/Code-GitHub-black)](https://github.com/cocowy1/UCS-Bench)
 
 UCS-Bench is a benchmark and codebase for evaluating **user-centric continual spatial intelligence** in long egocentric video streams. The goal is to test whether models can perceive, remember, and reason about spatial environments from a user's first-person viewpoint over time.
+
+<img width="5197" height="2598" alt="ucsbench" src="https://github.com/user-attachments/assets/9530fd91-7f43-458c-b900-25cbe7374290" />
+
+
 
 
 
@@ -34,7 +40,10 @@ https://github.com/user-attachments/assets/01d55770-abed-45de-ae98-2ef60cbc6c9b
 
 **UCS-Bench** focuses on long-horizon spatial reasoning in continuous egocentric video streams. Unlike standard video QA benchmarks that mainly test short clips or offline reasoning, UCS-Bench asks models to answer timestamped questions while respecting the user's current viewpoint and previously observed spatial memory.
 
+<img width="5197" height="2598" alt="ucsbench" src="https://github.com/user-attachments/assets/3cbe62db-2182-42e7-a8da-b773b78ca963" />
+
 **DirectMe** tackles this setting with a structured pipeline:
+<img width="3458" height="1258" alt="method" src="https://github.com/user-attachments/assets/bc692f50-06d3-47ef-951e-a0ce662fd007" />
 
 
 ```text
