@@ -8,7 +8,6 @@
 
 UCS-Bench is a benchmark and codebase for evaluating **user-centric continual spatial intelligence** in long egocentric video streams. The goal is to test whether models can perceive, remember, and reason about spatial environments from a user's first-person viewpoint over time.
 
-[CategoryDistribution.pdf](https://github.com/user-attachments/files/28912226/CategoryDistribution.pdf)
 
 
 This repository contains **DirectMe**, a spatial-memory-based video understanding framework that builds metric 3D scene graphs from egocentric videos and performs spatial question answering through structured retrieval.
@@ -36,7 +35,8 @@ https://github.com/user-attachments/assets/01d55770-abed-45de-ae98-2ef60cbc6c9b
 **UCS-Bench** focuses on long-horizon spatial reasoning in continuous egocentric video streams. Unlike standard video QA benchmarks that mainly test short clips or offline reasoning, UCS-Bench asks models to answer timestamped questions while respecting the user's current viewpoint and previously observed spatial memory.
 
 **DirectMe** tackles this setting with a structured pipeline:
-[method.pdf](https://github.com/user-attachments/files/28912229/method.pdf)
+
+
 ```text
 Egocentric Video
       ↓
