@@ -15,7 +15,6 @@ from directme.retrieval.egocentric import (
 from directme.retrieval.query_parser import QueryIntent, parse_query
 
 
-# Conventional id used for the (virtual) ego node referenced by ego_edges.
 EGO_NODE_ID: str = "ego"
 
 
@@ -37,29 +36,14 @@ class RetrievedContext:
     ego_edges: list[dict[str, Any]] = field(default_factory=list)
     reachable_radius_m: float = DEFAULT_REACHABLE_RADIUS_M
 
-    # Full match set, recorded BEFORE top_k truncation. ``items`` only
-    # contains the displayed top-k for keyframe / prompt assembly; counting
-    # questions ("how many cups have I seen") must use these full-match
-    # fields so a high-density scene with N >> top_k objects is not silently
-    # under-counted.
     total_matched_count: int = 0
     total_matched_node_ids: list[str] = field(default_factory=list)
     total_matched_labels: list[str] = field(default_factory=list)
-    # Optional ego-pose / place-visit history surfaced for trajectory queries.
-    # Populated from ``graph.metadata`` if present; absent on bare graphs.
     ego_pose_timeline: list[dict[str, Any]] = field(default_factory=list)
     place_visit_timeline: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def count(self) -> int:
-        """Total physical count of matched objects (NOT truncated by top_k).
-
-        This is what UCS-Bench Category & Quantity questions consume. If the
-        retriever was constructed with ``count_all_matches=True`` (default),
-        this returns the count over all matched nodes, summing each node's
-        ``count_contribution``. Otherwise it falls back to the truncated
-        ``items`` for backward compatibility.
-        """
         if self.total_matched_count:
             return self.total_matched_count
         return sum(int(item.node.attributes.get("count_contribution", 1)) for item in self.items)
@@ -92,8 +76,6 @@ def _contains_label_token(text: str, label: str) -> bool:
 
 
 def _normalize_room_token(value: Any) -> str:
-    """Normalize a room-like token so ``"living room"``, ``"living-room"`` and
-    ``"living_room"`` compare equal. Empty / None inputs return ``""``."""
     if value is None:
         return ""
     return str(value).strip().lower().replace(" ", "_").replace("-", "_")
@@ -106,11 +88,13 @@ class GraphRetriever:
         reachable_radius_m: float = DEFAULT_REACHABLE_RADIUS_M,
         lateral_tolerance_ratio: float = DEFAULT_LATERAL_TOLERANCE_RATIO,
         count_all_matches: bool = True,
+        allow_unlabeled_fallback: bool = False,   # 改动 A：默认关闭全图 fallback
     ):
         self.graph = graph
         self.reachable_radius_m = reachable_radius_m
         self.lateral_tolerance_ratio = lateral_tolerance_ratio
         self.count_all_matches = count_all_matches
+        self.allow_unlabeled_fallback = allow_unlabeled_fallback
 
     def retrieve(
         self,
@@ -118,23 +102,47 @@ class GraphRetriever:
         current_pose: SE3,
         top_k: int = 8,
         language: str | None = None,
+        as_of_timestamp: float | None = None,     # 改动 A：在线 QA 时间戳过滤
     ) -> RetrievedContext:
+        """检索场景图。
+
+        Parameters
+        ----------
+        as_of_timestamp : float | None
+            若提供，则仅保留首次观测时间 <= as_of_timestamp 的节点，
+            确保不使用"未来"观测回答当前时刻的问题（UCS-Bench 在线 QA 语义）。
+            None 时退化为离线检索（使用全部节点）。
+        allow_unlabeled_fallback : bool
+            当 intent.labels 和 intent.colors 均为空时，是否回退到全体候选节点。
+            默认 False：空意图时返回空匹配，避免把全图 128 个节点当成"匹配"。
+        """
         intent = parse_query(question, language=language)
+
+        # ── 改动 A：按时间戳过滤候选节点池 ──────────────────────────────────
+        if as_of_timestamp is not None:
+            candidate_nodes = [
+                n for n in self.graph.nodes.values()
+                if n.observations and float(n.observations[0].timestamp) <= float(as_of_timestamp)
+            ]
+        else:
+            candidate_nodes = list(self.graph.nodes.values())
+        # ─────────────────────────────────────────────────────────────────────
+
         scored: list[tuple[float, EntityNode]] = []
-        for node in self.graph.nodes.values():
+        for node in candidate_nodes:
             score = self._score_node(node, intent)
             if score > 0:
                 scored.append((score, node))
 
-        # If the query has no recognizable object/color terms, fall back to all nodes.
+        # ── 改动 A：关闭全图 fallback（原代码把全部节点都返回，导致 COUNT 题错误）──
         if not scored and not intent.labels and not intent.colors:
-            scored = [(0.1, node) for node in self.graph.nodes.values()]
+            if self.allow_unlabeled_fallback:
+                scored = [(0.1, node) for node in candidate_nodes]
+            # else: 保持 scored=[]，ctx.count=0，QA 端可识别"未检索到目标"
+        # ─────────────────────────────────────────────────────────────────────
 
         scored_sorted = sorted(scored, key=lambda x: x[0], reverse=True)
 
-        # Snapshot ALL matched nodes BEFORE truncation so counting questions
-        # are correct even when top_k is small. ``items`` below is only the
-        # displayed top-k; ``total_matched_*`` fields below are the universe.
         if self.count_all_matches:
             total_matched_count = sum(
                 int(node.attributes.get("count_contribution", 1)) for _s, node in scored_sorted
@@ -168,9 +176,6 @@ class GraphRetriever:
                 }
             )
 
-        # Pull trajectory / visit memory from graph metadata if present. The
-        # offline engine writes these incrementally; bare graphs simply have
-        # empty lists, which is fine for trajectory queries to fall back on.
         ego_pose_timeline = list(self.graph.metadata.get("ego_pose_timeline", []))
         place_visit_timeline = list(self.graph.metadata.get("place_visit_timeline", []))
 
@@ -213,10 +218,6 @@ class GraphRetriever:
         if not intent.labels and not intent.colors:
             score += 0.1
 
-        # Room / place soft-match. Questions like "客厅那个红杯子" carry
-        # ``intent.rooms == ["living_room"]``; we boost (but do not require)
-        # nodes whose ``scene_tag`` or assigned ``place_id`` aligns. Soft
-        # matching keeps recall high when the scene classifier is noisy.
         if intent.rooms:
             node_scene_tag = _normalize_room_token(node.attributes.get("scene_tag"))
             node_place_id = _normalize_room_token(node.place_id)
@@ -228,7 +229,6 @@ class GraphRetriever:
             ):
                 score += 1.0
 
-        # Prefer nodes with more observations.
         score += min(len(node.observations), 5) * 0.05
         return score
 

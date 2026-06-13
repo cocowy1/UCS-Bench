@@ -1,0 +1,34 @@
+[
+  {
+    "qid": "scene0804_local_01",
+    "video_uid": "directme_scal3r_full_pipeline",
+    "question": "Which side is the whiteboard on right now?",
+    "question_timestamps": "00:00:09",
+    "answer": "It is on your left.",
+    "options": {}
+  },
+  {
+    "qid": "scene0804_local_02",
+    "video_uid": "directme_scal3r_full_pipeline",
+    "question": "Which side is the bottle on right now?",
+    "question_timestamps": "00:00:16",
+    "answer": "It is on your left.",
+    "options": {}
+  },
+  {
+    "qid": "scene0804_local_03",
+    "video_uid": "directme_scal3r_full_pipeline",
+    "question": "Which side is the whiteboard on right now?",
+    "question_timestamps": "00:00:16",
+    "answer": "It is behind you.",
+    "options": {}
+  },
+  {
+    "qid": "scene0804_local_04",
+    "video_uid": "directme_scal3r_full_pipeline",
+    "question": "Which side is the bottle on right now?",
+    "question_timestamps": "00:00:18",
+    "answer": "It is on your left.",
+    "options": {}
+  }
+]

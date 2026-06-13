@@ -1,0 +1,358 @@
+{
+  "metadata": {
+    "video_uid": "tmp/directme_scal3r_full_pipeline",
+    "source": "synthetic_a100_end_to_end_framework_fps",
+    "hardware": "NVIDIA A100",
+    "scope": "full_framework: perception_depth_tracking_scal3r_mapping_scene_graph",
+    "frame_count": 20,
+    "input_fps": 1.0,
+    "fps_range": [
+      0.794,
+      1.088
+    ],
+    "fps_mean": 0.994,
+    "note": "Constructed for web demo display as a plausible A100 end-to-end throughput curve; values are estimates, not measured runtime."
+  },
+  "results": [
+    {
+      "qid": "synthetic_a100_framework_fps_000",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 0.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.259,
+        "frame_count": 1,
+        "frame_fps": 0.794,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_001",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 1.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.178,
+        "frame_count": 1,
+        "frame_fps": 0.849,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_002",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 2.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.977,
+        "frame_count": 1,
+        "frame_fps": 1.024,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_003",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 3.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.934,
+        "frame_count": 1,
+        "frame_fps": 1.071,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_004",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 4.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.944,
+        "frame_count": 1,
+        "frame_fps": 1.059,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_005",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 5.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.919,
+        "frame_count": 1,
+        "frame_fps": 1.088,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_006",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 6.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.944,
+        "frame_count": 1,
+        "frame_fps": 1.059,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_007",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 7.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.945,
+        "frame_count": 1,
+        "frame_fps": 1.058,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_008",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 8.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.956,
+        "frame_count": 1,
+        "frame_fps": 1.046,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_009",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 9.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.047,
+        "frame_count": 1,
+        "frame_fps": 0.955,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_010",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 10.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.965,
+        "frame_count": 1,
+        "frame_fps": 1.036,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_011",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 11.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.942,
+        "frame_count": 1,
+        "frame_fps": 1.062,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_012",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 12.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.952,
+        "frame_count": 1,
+        "frame_fps": 1.05,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_013",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 13.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 0.977,
+        "frame_count": 1,
+        "frame_fps": 1.024,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_014",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 14.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.116,
+        "frame_count": 1,
+        "frame_fps": 0.896,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_015",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 15.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.017,
+        "frame_count": 1,
+        "frame_fps": 0.983,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_016",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 16.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.054,
+        "frame_count": 1,
+        "frame_fps": 0.949,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_017",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 17.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.04,
+        "frame_count": 1,
+        "frame_fps": 0.962,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_018",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 18.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.055,
+        "frame_count": 1,
+        "frame_fps": 0.948,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    },
+    {
+      "qid": "synthetic_a100_framework_fps_019",
+      "video_uid": "tmp/directme_scal3r_full_pipeline",
+      "timestamp_s": 19.0,
+      "metric_type": "synthetic_a100_end_to_end_framework_fps",
+      "qwen_inference": {
+        "latency_s": 1.033,
+        "frame_count": 1,
+        "frame_fps": 0.968,
+        "output_tokens": 0,
+        "token_fps": 0.0,
+        "hardware": "NVIDIA A100",
+        "scope": "end_to_end_framework",
+        "synthetic": true,
+        "note": "Plausible synthetic A100 end-to-end framework FPS for demo display; not a measured benchmark."
+      }
+    }
+  ]
+}

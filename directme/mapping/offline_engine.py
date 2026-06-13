@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from collections.abc import Iterable
 from typing import Any
 
 import numpy as np
@@ -103,14 +104,33 @@ class OfflineMappingEngine:
                 )
         self._chunk_counter = 0
 
-    def _chunk_frames(self, frames: list[VideoFrame], chunk_size: int) -> list[list[VideoFrame]]:
-        return [frames[i : i + chunk_size] for i in range(0, len(frames), chunk_size)]
+    def _chunk_frames(self, frames: Iterable[VideoFrame], chunk_size: int) -> Iterable[list[VideoFrame]]:
+        if chunk_size <= 0:
+            raise ValueError(f"chunk_size must be positive, got {chunk_size}")
+        chunk: list[VideoFrame] = []
+        for frame in frames:
+            chunk.append(frame)
+            if len(chunk) >= chunk_size:
+                yield chunk
+                chunk = []
+        if chunk:
+            yield chunk
 
-    def process_frames(self, frames: list[VideoFrame], chunk_size: int | None = None) -> list[MappingEvent]:
+    def process_frames(self, frames: Iterable[VideoFrame], chunk_size: int | None = None) -> list[MappingEvent]:
+        """Process a frame iterable in fixed-size offline-incremental chunks.
+
+        ``frames`` may be a generator produced by video decoding; the method no
+        longer requires materializing the whole video before perception starts.
+        A ``chunk_size`` of 60 means the backend is called once per 60 sampled
+        frames, with a shorter final chunk if needed.
+        """
         chunk_size = chunk_size or self.config.stream.chunk_size_frames
         events: list[MappingEvent] = []
         for chunk_id, chunk in enumerate(self._chunk_frames(frames, chunk_size)):
             events.extend(self.process_chunk(chunk, chunk_id=chunk_id))
+        finalizer = getattr(self.backend, "finalize", None)
+        if callable(finalizer):
+            finalizer()
         return events
 
     def process_chunk(self, frames: list[VideoFrame], chunk_id: int) -> list[MappingEvent]:

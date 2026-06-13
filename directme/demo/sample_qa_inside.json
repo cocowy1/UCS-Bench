@@ -1,0 +1,50 @@
+[
+  {
+    "qid": "01",
+    "video_uid": "directme_scal3r_full_pipeline1",
+    "question": "Which side is the trash can on right now?",
+    "question_timestamps": "00:00:12",
+    "answer": "It is on your left.",
+    "options": {}
+  },
+  {
+    "qid": "02",
+    "video_uid": "directme_scal3r_full_pipeline1",
+    "question": "Which side is the trash can on right now?",
+    "question_timestamps": "00:00:28",
+    "answer": "It is to your front-left and rear-left.",
+    "options": {}
+  },
+  {
+    "qid": "03",
+    "video_uid": "directme_scal3r_full_pipeline1",
+    "question": "Which side is the milk tea bucket in the milk tea shop on right now?",
+    "question_timestamps": "00:00:02",
+    "answer": "It is on your right.",
+    "options": {}
+  },
+  {
+    "qid": "04",
+    "video_uid": "directme_scal3r_full_pipeline1",
+    "question": "Which side is the milk tea bucket in the milk tea shop on right now?",
+    "question_timestamps": "00:00:24",
+    "answer": "It is to your rear-right.",
+    "options": {}
+  },
+  {
+    "qid": "05",
+    "video_uid": "directme_scal3r_full_pipeline1",
+    "question": "Which side is the goods shelf in the store on right now?",
+    "question_timestamps": "00:00:44",
+    "answer": "It is on your right.",
+    "options": {}
+  },
+  {
+    "qid": "06",
+    "video_uid": "directme_scal3r_full_pipeline1",
+    "question": "Which side is the goods shelf in the store on right now?",
+    "question_timestamps": "00:00:47",
+    "answer": "It is behind you.",
+    "options": {}
+  }
+]

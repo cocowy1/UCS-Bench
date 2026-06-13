@@ -11,7 +11,7 @@ Public API::
     )
 """
 
-from directme.eval.ucsbench import (
+from Directme.directme.eval.eval_ucsbench import (
     DimensionResult,
     EvaluationReport,
     UCSBenchEvaluator,

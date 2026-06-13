@@ -1,0 +1,107 @@
+<svg width="1200" height="980" viewBox="0 0 1200 980" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f4efe6"/>
+      <stop offset="100%" stop-color="#e5f0ec"/>
+    </linearGradient>
+    <linearGradient id="boxA" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fff3d8"/>
+      <stop offset="100%" stop-color="#f7d9a7"/>
+    </linearGradient>
+    <linearGradient id="boxB" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#e1f1ec"/>
+      <stop offset="100%" stop-color="#b7dccf"/>
+    </linearGradient>
+    <linearGradient id="boxC" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#e2edf8"/>
+      <stop offset="100%" stop-color="#bdd2ea"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#35524a"/>
+    </marker>
+    <style>
+      .title { font: 700 28px 'DejaVu Sans', sans-serif; fill: #22322d; }
+      .subtitle { font: 400 15px 'DejaVu Sans', sans-serif; fill: #455a54; }
+      .boxTitle { font: 700 18px 'DejaVu Sans', sans-serif; fill: #1f2d29; }
+      .boxText { font: 400 14px 'DejaVu Sans', sans-serif; fill: #243733; }
+      .small { font: 400 13px 'DejaVu Sans', sans-serif; fill: #3f5550; }
+      .line { stroke: #35524a; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .soft { fill: #ffffff; stroke: #55756c; stroke-width: 2; rx: 20; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="980" fill="url(#bg)"/>
+  <text x="70" y="70" class="title">DirectMe Demo Flow</text>
+  <text x="70" y="102" class="subtitle">对应文件：directme/demo/demo.py</text>
+
+  <rect x="70" y="150" width="300" height="130" rx="24" fill="url(#boxA)" stroke="#9a6f2e" stroke-width="2"/>
+  <text x="95" y="190" class="boxTitle">1. CLI 参数解析</text>
+  <text x="95" y="222" class="boxText">main()</text>
+  <text x="95" y="246" class="small">决定 input-mode / mode / graph-json / qa-json</text>
+
+  <rect x="430" y="150" width="320" height="130" rx="24" fill="url(#boxA)" stroke="#9a6f2e" stroke-width="2"/>
+  <text x="455" y="190" class="boxTitle">2. 输入分支判断</text>
+  <text x="455" y="222" class="boxText">from_graph 或 from_perception</text>
+  <text x="455" y="246" class="small">auto 模式下按 video / frames-dir 是否存在决定</text>
+
+  <rect x="810" y="120" width="320" height="160" rx="24" fill="url(#boxB)" stroke="#3e7e69" stroke-width="2"/>
+  <text x="835" y="160" class="boxTitle">3A. Graph 路径</text>
+  <text x="835" y="192" class="boxText">load_graph()</text>
+  <text x="835" y="216" class="small">读取 scene_graph.json</text>
+  <text x="835" y="240" class="small">默认优先 directme_scal3r_full_pipeline/directme_mapping_run/scene_graph.json</text>
+
+  <rect x="810" y="320" width="320" height="190" rx="24" fill="url(#boxB)" stroke="#3e7e69" stroke-width="2"/>
+  <text x="835" y="360" class="boxTitle">3B. Perception 路径</text>
+  <text x="835" y="392" class="boxText">build_perception_backend()</text>
+  <text x="835" y="416" class="small">SCAL3R / YOLO-World / SAM2 / tracking</text>
+  <text x="835" y="440" class="small">然后 build_graph_from_perception()</text>
+  <text x="835" y="464" class="small">输出 scene_graph.json 与深度/检测产物</text>
+
+  <rect x="430" y="360" width="320" height="150" rx="24" fill="url(#boxC)" stroke="#4b6f97" stroke-width="2"/>
+  <text x="455" y="400" class="boxTitle">4. 构建 DirectMe 实例</text>
+  <text x="455" y="432" class="boxText">build_directme()</text>
+  <text x="455" y="456" class="small">rule / qwen / internvl</text>
+
+  <rect x="70" y="360" width="300" height="150" rx="24" fill="url(#boxC)" stroke="#4b6f97" stroke-width="2"/>
+  <text x="95" y="400" class="boxTitle">5. QA 输入</text>
+  <text x="95" y="432" class="boxText">load_qa()</text>
+  <text x="95" y="456" class="small">或 interactive 模式直接读取用户问题</text>
+
+  <rect x="70" y="590" width="300" height="180" rx="24" fill="#fff" stroke="#6b7c77" stroke-width="2"/>
+  <text x="95" y="630" class="boxTitle">6. 时间对齐</text>
+  <text x="95" y="662" class="boxText">run_query()</text>
+  <text x="95" y="686" class="small">question_timestamps -&gt; _ts_sec()</text>
+  <text x="95" y="710" class="small">pose_from_graph_timeline() 取 ego pose</text>
+
+  <rect x="430" y="590" width="320" height="180" rx="24" fill="#fff" stroke="#6b7c77" stroke-width="2"/>
+  <text x="455" y="630" class="boxTitle">7. 检索与自我中心关系</text>
+  <text x="455" y="662" class="boxText">parse_query() + GraphRetriever.retrieve()</text>
+  <text x="455" y="686" class="small">得到 relation / distance / reachable</text>
+  <text x="455" y="710" class="small">组织成 spatial_items</text>
+
+  <rect x="810" y="590" width="320" height="180" rx="24" fill="#fff" stroke="#6b7c77" stroke-width="2"/>
+  <text x="835" y="630" class="boxTitle">8. 答案生成</text>
+  <text x="835" y="662" class="boxText">dm.answer() / dm.answer_mc()</text>
+  <text x="835" y="686" class="small">rule 模式直接回答</text>
+  <text x="835" y="710" class="small">VLM 模式可结合 keyframe 图像</text>
+
+  <rect x="250" y="840" width="700" height="90" rx="24" fill="#eef4f2" stroke="#55756c" stroke-width="2"/>
+  <text x="280" y="880" class="boxTitle">9. 输出结果</text>
+  <text x="280" y="906" class="boxText">终端打印结果、保存 output-json；图侧可结合 examples/visualize_graph.py 生成 topdown PNG</text>
+
+  <path d="M370 215 L430 215" class="line"/>
+  <path d="M750 215 L810 200" class="line"/>
+  <path d="M590 280 L590 360" class="line"/>
+  <path d="M810 415 L750 435" class="line"/>
+  <path d="M430 435 L370 435" class="line"/>
+  <path d="M220 510 L220 590" class="line"/>
+  <path d="M370 680 L430 680" class="line"/>
+  <path d="M750 680 L810 680" class="line"/>
+  <path d="M970 770 L970 840" class="line"/>
+
+  <rect x="90" y="288" width="220" height="44" class="soft"/>
+  <text x="108" y="316" class="small">默认适合本地演示：from_graph + rule</text>
+
+  <rect x="840" y="528" width="250" height="44" class="soft"/>
+  <text x="858" y="556" class="small">完整 perception 链路依赖外部模型与原始视频</text>
+</svg>

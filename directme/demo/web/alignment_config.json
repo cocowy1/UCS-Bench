@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "graph": {
+    "position": [
+      0.0,
+      1.01,
+      0.0
+    ],
+    "rotationDeg": [
+      7.0,
+      0.0,
+      0.0
+    ],
+    "scale": 1.0
+  },
+  "sceneGraph": {
+    "position": [
+      0.0,
+      2.08,
+      0.0
+    ],
+    "rotationDeg": [
+      -3.0,
+      45.0,
+      0.0
+    ],
+    "scale": 1.3
+  },
+  "scene": {
+    "position": [
+      0.0,
+      1.23,
+      0.0
+    ],
+    "rotationDeg": [
+      7.0,
+      0.0,
+      0.0
+    ],
+    "scale": 3.8
+  }
+}

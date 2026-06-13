@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DirectMe 3D Alignment Debug</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="demo-shell debug-shell">
+      <aside class="media-panel debug-panel" aria-label="Alignment controls">
+        <header class="panel-header">
+          <div>
+            <p class="eyebrow">Debug / Alignment</p>
+            <h1>Alignment Debug</h1>
+          </div>
+          <span class="run-pill">config</span>
+        </header>
+
+        <div class="debug-actions">
+          <button class="primary" id="saveConfig" type="button">Save Config</button>
+          <button id="resetConfig" type="button">Reset</button>
+          <button id="flipSceneY" type="button">Scene Y 180</button>
+          <a href="./" target="_blank" rel="noreferrer">Open Demo</a>
+        </div>
+        <p class="status-line" id="statusLine">Config writes to directme/demo/web/alignment_config.json</p>
+
+        <section class="control-section">
+          <h2>Timeline</h2>
+          <label class="slider-row">
+            <span>Time</span>
+            <input id="debugTimeline" type="range" min="0" max="1000" value="1000" />
+            <output id="debugClock">00:20</output>
+          </label>
+        </section>
+
+        <section class="control-section">
+          <h2>Ego Arrow Pose</h2>
+          <div id="graphControls"></div>
+        </section>
+
+        <section class="control-section">
+          <h2>Scene Graph Pose</h2>
+          <div id="sceneGraphControls"></div>
+        </section>
+
+        <section class="control-section">
+          <h2>Dense Map Pose</h2>
+          <div id="sceneControls"></div>
+        </section>
+      </aside>
+
+      <section class="viewer-panel" aria-label="Alignment 3D viewer">
+        <div class="toolbar">
+          <div class="view-title">
+            <strong>Alignment Debug View</strong>
+            <span>Scene graph above, dense mapping below. Sliders update pose and scale live.</span>
+          </div>
+          <div class="toolbar-actions">
+            <label class="toggle-control">
+              <input id="labelsToggle" type="checkbox" checked />
+              <span>Labels</span>
+            </label>
+            <label class="range-control">
+              <span>Point Size</span>
+              <input id="pointSize" type="range" min="0.008" max="0.05" step="0.002" value="0.018" />
+            </label>
+          </div>
+        </div>
+
+        <div class="split-stage">
+          <section class="viewport-block">
+            <div class="viewport-title">
+              <strong>Scene Graph</strong>
+              <span>ego arrow and scene graph transform targets</span>
+            </div>
+            <canvas id="graphCanvas"></canvas>
+            <div class="viewport-hud">
+              <span id="graphPhaseLabel">Mapping Complete</span>
+              <span id="graphCameraLabel">Frame 0</span>
+            </div>
+          </section>
+          <section class="viewport-block">
+            <div class="viewport-title">
+              <strong>Dense Mapping</strong>
+              <span>dense point cloud transform target</span>
+            </div>
+            <canvas id="denseCanvas"></canvas>
+            <div class="viewport-hud">
+              <span id="densePhaseLabel">Mapping Complete</span>
+              <span id="denseCameraLabel">Frame 0</span>
+            </div>
+          </section>
+          <div class="loading" id="loadingOverlay">
+            <strong>Loading debug scene</strong>
+            <span id="loadingText">Preparing assets...</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./debug.js"></script>
+  </body>
+</html>

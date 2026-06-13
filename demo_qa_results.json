@@ -1,0 +1,1803 @@
+{
+  "results": [
+    {
+      "qid": "scene0715_00-0_1",
+      "video_uid": "scene0715_00-0",
+      "question": "How many sofas are there?",
+      "language": "en",
+      "timestamp_s": 5.0,
+      "category": "Object Recall & Quantity Tracking",
+      "subcategory": "Quantity Change Tracking",
+      "qtype": "COUNT",
+      "task_difficulty": "easy",
+      "intent": {
+        "labels": [],
+        "colors": [],
+        "rooms": [],
+        "wants_location": false,
+        "wants_count": true,
+        "wants_reachability": false,
+        "wants_trajectory": false
+      },
+      "matched_count": 28,
+      "reachable_count": 16,
+      "spatial_items": [
+        {
+          "node_id": "entity_001",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            0.994,
+            0.059,
+            0.476
+          ],
+          "relation": "front",
+          "distance_m": 1.1448,
+          "reachable": true,
+          "natural_language": "1.1 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_002",
+          "label": "Couch",
+          "color": "orange",
+          "p_world": [
+            0.469,
+            0.703,
+            0.726
+          ],
+          "relation": "front",
+          "distance_m": 1.1414,
+          "reachable": true,
+          "natural_language": "1.1 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000008.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000007.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000005.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_004",
+          "label": "Carpet",
+          "color": "orange",
+          "p_world": [
+            0.6,
+            0.862,
+            0.564
+          ],
+          "relation": "front_right",
+          "distance_m": 1.2427,
+          "reachable": true,
+          "natural_language": "1.2 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000002.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000004.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000003.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000007.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_005",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            1.462,
+            -0.079,
+            0.233
+          ],
+          "relation": "front_right",
+          "distance_m": 1.5412,
+          "reachable": true,
+          "natural_language": "1.5 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000087.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000009.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_007",
+          "label": "Picture/Frame",
+          "color": "blue",
+          "p_world": [
+            -0.192,
+            -0.37,
+            1.007
+          ],
+          "relation": "left",
+          "distance_m": 0.9901,
+          "reachable": true,
+          "natural_language": "1.0 m to your left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000079.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000078.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000083.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000082.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_008",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            1.633,
+            0.138,
+            0.082
+          ],
+          "relation": "front_right",
+          "distance_m": 1.7152,
+          "reachable": true,
+          "natural_language": "1.7 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000010.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000012.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_009",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            0.724,
+            0.057,
+            0.601
+          ],
+          "relation": "front",
+          "distance_m": 0.9612,
+          "reachable": true,
+          "natural_language": "1.0 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000022.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_012",
+          "label": "Person",
+          "color": "orange",
+          "p_world": [
+            1.279,
+            0.077,
+            0.175
+          ],
+          "relation": "front_right",
+          "distance_m": 1.3607,
+          "reachable": true,
+          "natural_language": "1.4 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000016.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_014",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            1.584,
+            1.011,
+            -0.356
+          ],
+          "relation": "front_right",
+          "distance_m": 2.0186,
+          "reachable": true,
+          "natural_language": "2.0 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000024.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_019",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.925,
+            -0.171,
+            0.411
+          ],
+          "relation": "front",
+          "distance_m": 1.057,
+          "reachable": true,
+          "natural_language": "1.1 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_021",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            2.028,
+            0.518,
+            -0.729
+          ],
+          "relation": "front_right",
+          "distance_m": 2.3211,
+          "reachable": true,
+          "natural_language": "2.3 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000098.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000099.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_024",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.53,
+            -0.193,
+            0.681
+          ],
+          "relation": "front_left",
+          "distance_m": 0.8643,
+          "reachable": true,
+          "natural_language": "0.9 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000094.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000093.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000096.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_025",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.806,
+            0.104,
+            0.588
+          ],
+          "relation": "front",
+          "distance_m": 1.0305,
+          "reachable": true,
+          "natural_language": "1.0 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000029.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000088.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_010",
+          "label": "Chair",
+          "color": "orange",
+          "p_world": [
+            0.668,
+            0.828,
+            0.51
+          ],
+          "relation": "front_right",
+          "distance_m": 1.2368,
+          "reachable": true,
+          "natural_language": "1.2 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000013.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000096.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000097.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_011",
+          "label": "Person",
+          "color": "red",
+          "p_world": [
+            1.293,
+            -0.034,
+            0.147
+          ],
+          "relation": "front_right",
+          "distance_m": 1.3659,
+          "reachable": true,
+          "natural_language": "1.4 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000012.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_013",
+          "label": "Picture/Frame",
+          "color": "unknown",
+          "p_world": [
+            1.197,
+            -0.021,
+            0.168
+          ],
+          "relation": "front_right",
+          "distance_m": 1.2722,
+          "reachable": true,
+          "natural_language": "1.3 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000015.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000019.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg"
+          ]
+        }
+      ],
+      "raw_answer": "D",
+      "predicted_label": "D",
+      "answer_label": "D",
+      "is_correct": true,
+      "reference_answer": "Three."
+    },
+    {
+      "qid": "scene0715_00-0_2",
+      "video_uid": "scene0715_00-0",
+      "question": "How many sofas are there?",
+      "language": "en",
+      "timestamp_s": 12.0,
+      "category": "Object Recall & Quantity Tracking",
+      "subcategory": "Quantity Change Tracking",
+      "qtype": "COUNT",
+      "task_difficulty": "easy",
+      "intent": {
+        "labels": [],
+        "colors": [],
+        "rooms": [],
+        "wants_location": false,
+        "wants_count": true,
+        "wants_reachability": false,
+        "wants_trajectory": false
+      },
+      "matched_count": 65,
+      "reachable_count": 16,
+      "spatial_items": [
+        {
+          "node_id": "entity_001",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            0.994,
+            0.059,
+            0.476
+          ],
+          "relation": "behind_right",
+          "distance_m": 0.8074,
+          "reachable": true,
+          "natural_language": "0.8 m to your back-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_002",
+          "label": "Couch",
+          "color": "orange",
+          "p_world": [
+            0.469,
+            0.703,
+            0.726
+          ],
+          "relation": "right",
+          "distance_m": 1.0783,
+          "reachable": true,
+          "natural_language": "1.1 m to your right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000008.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000007.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000005.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_004",
+          "label": "Carpet",
+          "color": "orange",
+          "p_world": [
+            0.6,
+            0.862,
+            0.564
+          ],
+          "relation": "front",
+          "distance_m": 1.078,
+          "reachable": true,
+          "natural_language": "1.1 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000002.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000004.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000003.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000007.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_005",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            1.462,
+            -0.079,
+            0.233
+          ],
+          "relation": "behind",
+          "distance_m": 1.0717,
+          "reachable": true,
+          "natural_language": "1.1 m directly behind you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000087.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000009.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_007",
+          "label": "Picture/Frame",
+          "color": "blue",
+          "p_world": [
+            -0.192,
+            -0.37,
+            1.007
+          ],
+          "relation": "right",
+          "distance_m": 1.379,
+          "reachable": true,
+          "natural_language": "1.4 m to your right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000079.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000078.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000083.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000082.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_008",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            1.633,
+            0.138,
+            0.082
+          ],
+          "relation": "behind_left",
+          "distance_m": 1.1926,
+          "reachable": true,
+          "natural_language": "1.2 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000010.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000012.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_009",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            0.724,
+            0.057,
+            0.601
+          ],
+          "relation": "behind_right",
+          "distance_m": 0.7784,
+          "reachable": true,
+          "natural_language": "0.8 m to your back-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000022.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_012",
+          "label": "Person",
+          "color": "orange",
+          "p_world": [
+            1.279,
+            0.077,
+            0.175
+          ],
+          "relation": "behind",
+          "distance_m": 0.8725,
+          "reachable": true,
+          "natural_language": "0.9 m directly behind you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000016.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_014",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            1.584,
+            1.011,
+            -0.356
+          ],
+          "relation": "behind_left",
+          "distance_m": 1.4937,
+          "reachable": true,
+          "natural_language": "1.5 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000024.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_019",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.925,
+            -0.171,
+            0.411
+          ],
+          "relation": "behind_right",
+          "distance_m": 0.7463,
+          "reachable": true,
+          "natural_language": "0.7 m to your back-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_021",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            2.028,
+            0.518,
+            -0.729
+          ],
+          "relation": "behind_left",
+          "distance_m": 1.7398,
+          "reachable": true,
+          "natural_language": "1.7 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000098.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000099.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_024",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.53,
+            -0.193,
+            0.681
+          ],
+          "relation": "behind_right",
+          "distance_m": 0.8509,
+          "reachable": true,
+          "natural_language": "0.9 m to your back-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000094.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000093.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000096.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_025",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.806,
+            0.104,
+            0.588
+          ],
+          "relation": "behind_right",
+          "distance_m": 0.7999,
+          "reachable": true,
+          "natural_language": "0.8 m to your back-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000029.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000088.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_030",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.855,
+            0.69,
+            -0.098
+          ],
+          "relation": "left",
+          "distance_m": 0.7518,
+          "reachable": true,
+          "natural_language": "0.8 m to your left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000039.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000038.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000040.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000028.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_036",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.592,
+            1.028,
+            -0.893
+          ],
+          "relation": "front_left",
+          "distance_m": 1.246,
+          "reachable": true,
+          "natural_language": "1.2 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000031.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000032.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000033.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000035.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_052",
+          "label": "Picture/Frame",
+          "color": "green",
+          "p_world": [
+            0.495,
+            0.864,
+            -0.651
+          ],
+          "relation": "front_left",
+          "distance_m": 0.9666,
+          "reachable": true,
+          "natural_language": "1.0 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000037.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000038.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000039.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000040.jpg"
+          ]
+        }
+      ],
+      "raw_answer": "B",
+      "predicted_label": "B",
+      "answer_label": "B",
+      "is_correct": true,
+      "reference_answer": "Three."
+    },
+    {
+      "qid": "scene0715_00-0_3",
+      "video_uid": "scene0715_00-0",
+      "question": "Is the door closed?",
+      "language": "en",
+      "timestamp_s": 15.0,
+      "category": "Object Recall & Quantity Tracking",
+      "subcategory": "Object Category Recall",
+      "qtype": "BINARY",
+      "task_difficulty": "easy",
+      "intent": {
+        "labels": [
+          "door"
+        ],
+        "colors": [],
+        "rooms": [],
+        "wants_location": false,
+        "wants_count": false,
+        "wants_reachability": false,
+        "wants_trajectory": false
+      },
+      "matched_count": 0,
+      "reachable_count": 0,
+      "spatial_items": [],
+      "raw_answer": "B",
+      "predicted_label": "B",
+      "answer_label": "A",
+      "is_correct": false,
+      "reference_answer": "Yes,it is."
+    },
+    {
+      "qid": "scene0715_00-0_4",
+      "video_uid": "scene0715_00-0",
+      "question": "Is the door closed?",
+      "language": "en",
+      "timestamp_s": 20.0,
+      "category": "Object Recall & Quantity Tracking",
+      "subcategory": "Object Category Recall",
+      "qtype": "BINARY",
+      "task_difficulty": "easy",
+      "intent": {
+        "labels": [
+          "door"
+        ],
+        "colors": [],
+        "rooms": [],
+        "wants_location": false,
+        "wants_count": false,
+        "wants_reachability": false,
+        "wants_trajectory": false
+      },
+      "matched_count": 0,
+      "reachable_count": 0,
+      "spatial_items": [],
+      "raw_answer": "B",
+      "predicted_label": "B",
+      "answer_label": "A",
+      "is_correct": false,
+      "reference_answer": "Yes,it is."
+    },
+    {
+      "qid": "scene0715_00-0_6",
+      "video_uid": "scene0715_00-0",
+      "question": "Where are my photos?",
+      "language": "en",
+      "timestamp_s": 20.0,
+      "category": "Ego-centric Position & Orientation Memory",
+      "subcategory": "Relative Position & Orientation Memory",
+      "qtype": "OTHER",
+      "task_difficulty": "easy",
+      "intent": {
+        "labels": [
+          "picture"
+        ],
+        "colors": [],
+        "rooms": [],
+        "wants_location": true,
+        "wants_count": false,
+        "wants_reachability": false,
+        "wants_trajectory": false
+      },
+      "matched_count": 80,
+      "reachable_count": 16,
+      "spatial_items": [
+        {
+          "node_id": "entity_001",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            0.994,
+            0.059,
+            0.476
+          ],
+          "relation": "front",
+          "distance_m": 1.0541,
+          "reachable": true,
+          "natural_language": "1.1 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_005",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            1.462,
+            -0.079,
+            0.233
+          ],
+          "relation": "front",
+          "distance_m": 1.3656,
+          "reachable": true,
+          "natural_language": "1.4 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000087.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000009.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_007",
+          "label": "Picture/Frame",
+          "color": "blue",
+          "p_world": [
+            -0.192,
+            -0.37,
+            1.007
+          ],
+          "relation": "front_left",
+          "distance_m": 1.3087,
+          "reachable": true,
+          "natural_language": "1.3 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000079.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000078.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000083.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000082.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_008",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            1.633,
+            0.138,
+            0.082
+          ],
+          "relation": "front_right",
+          "distance_m": 1.4909,
+          "reachable": true,
+          "natural_language": "1.5 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000010.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000012.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_009",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            0.724,
+            0.057,
+            0.601
+          ],
+          "relation": "front_left",
+          "distance_m": 0.9572,
+          "reachable": true,
+          "natural_language": "1.0 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000022.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_014",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            1.584,
+            1.011,
+            -0.356
+          ],
+          "relation": "front_right",
+          "distance_m": 1.7177,
+          "reachable": true,
+          "natural_language": "1.7 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000024.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_019",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.925,
+            -0.171,
+            0.411
+          ],
+          "relation": "front",
+          "distance_m": 0.9862,
+          "reachable": true,
+          "natural_language": "1.0 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_021",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            2.028,
+            0.518,
+            -0.729
+          ],
+          "relation": "front_right",
+          "distance_m": 1.9957,
+          "reachable": true,
+          "natural_language": "2.0 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000098.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000099.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_024",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.53,
+            -0.193,
+            0.681
+          ],
+          "relation": "front_left",
+          "distance_m": 0.9647,
+          "reachable": true,
+          "natural_language": "1.0 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000094.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000093.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000096.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_025",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.806,
+            0.104,
+            0.588
+          ],
+          "relation": "front_left",
+          "distance_m": 0.9986,
+          "reachable": true,
+          "natural_language": "1.0 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000029.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000088.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_030",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.855,
+            0.69,
+            -0.098
+          ],
+          "relation": "front_right",
+          "distance_m": 0.9387,
+          "reachable": true,
+          "natural_language": "0.9 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000039.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000038.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000040.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000028.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_036",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.592,
+            1.028,
+            -0.893
+          ],
+          "relation": "right",
+          "distance_m": 1.2791,
+          "reachable": true,
+          "natural_language": "1.3 m to your right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000031.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000032.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000033.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000035.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_052",
+          "label": "Picture/Frame",
+          "color": "green",
+          "p_world": [
+            0.495,
+            0.864,
+            -0.651
+          ],
+          "relation": "right",
+          "distance_m": 0.9924,
+          "reachable": true,
+          "natural_language": "1.0 m to your right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000037.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000038.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000039.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000040.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_065",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            -1.0,
+            0.109,
+            0.106
+          ],
+          "relation": "behind_left",
+          "distance_m": 1.2023,
+          "reachable": true,
+          "natural_language": "1.2 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000071.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000069.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000070.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000064.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_068",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            -1.009,
+            0.525,
+            -0.641
+          ],
+          "relation": "behind",
+          "distance_m": 1.3482,
+          "reachable": true,
+          "natural_language": "1.3 m directly behind you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000066.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000067.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000063.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000064.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_076",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            -0.795,
+            0.312,
+            -0.251
+          ],
+          "relation": "behind_left",
+          "distance_m": 0.9977,
+          "reachable": true,
+          "natural_language": "1.0 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000064.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000065.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000066.jpg"
+          ]
+        }
+      ],
+      "raw_answer": "D",
+      "predicted_label": "D",
+      "answer_label": "D",
+      "is_correct": true,
+      "reference_answer": "They are on the wall behind the sofa."
+    },
+    {
+      "qid": "scene0715_00-0_9",
+      "video_uid": "scene0715_00-0",
+      "question": "Where is the vacuum cleaner?",
+      "language": "en",
+      "timestamp_s": 11.0,
+      "category": "Ego-centric Position & Orientation Memory",
+      "subcategory": "Relative Position & Orientation Memory",
+      "qtype": "OTHER",
+      "task_difficulty": "medium",
+      "intent": {
+        "labels": [],
+        "colors": [],
+        "rooms": [],
+        "wants_location": true,
+        "wants_count": false,
+        "wants_reachability": false,
+        "wants_trajectory": false
+      },
+      "matched_count": 63,
+      "reachable_count": 16,
+      "spatial_items": [
+        {
+          "node_id": "entity_001",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            0.994,
+            0.059,
+            0.476
+          ],
+          "relation": "behind",
+          "distance_m": 0.7198,
+          "reachable": true,
+          "natural_language": "0.7 m directly behind you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_002",
+          "label": "Couch",
+          "color": "orange",
+          "p_world": [
+            0.469,
+            0.703,
+            0.726
+          ],
+          "relation": "right",
+          "distance_m": 1.0487,
+          "reachable": true,
+          "natural_language": "1.0 m to your right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000008.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000007.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000005.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_004",
+          "label": "Carpet",
+          "color": "orange",
+          "p_world": [
+            0.6,
+            0.862,
+            0.564
+          ],
+          "relation": "front",
+          "distance_m": 1.0483,
+          "reachable": true,
+          "natural_language": "1.0 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000002.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000004.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000003.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000007.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_005",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            1.462,
+            -0.079,
+            0.233
+          ],
+          "relation": "behind_left",
+          "distance_m": 0.9817,
+          "reachable": true,
+          "natural_language": "1.0 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000087.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000009.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_007",
+          "label": "Picture/Frame",
+          "color": "blue",
+          "p_world": [
+            -0.192,
+            -0.37,
+            1.007
+          ],
+          "relation": "behind_right",
+          "distance_m": 1.3738,
+          "reachable": true,
+          "natural_language": "1.4 m to your back-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000079.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000078.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000083.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000082.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_008",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            1.633,
+            0.138,
+            0.082
+          ],
+          "relation": "behind_left",
+          "distance_m": 1.1096,
+          "reachable": true,
+          "natural_language": "1.1 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000010.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000012.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_009",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            0.724,
+            0.057,
+            0.601
+          ],
+          "relation": "behind_right",
+          "distance_m": 0.7079,
+          "reachable": true,
+          "natural_language": "0.7 m to your back-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000022.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_012",
+          "label": "Person",
+          "color": "orange",
+          "p_world": [
+            1.279,
+            0.077,
+            0.175
+          ],
+          "relation": "behind_left",
+          "distance_m": 0.7836,
+          "reachable": true,
+          "natural_language": "0.8 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000016.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_014",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            1.584,
+            1.011,
+            -0.356
+          ],
+          "relation": "left",
+          "distance_m": 1.4532,
+          "reachable": true,
+          "natural_language": "1.5 m to your left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000024.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_019",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.925,
+            -0.171,
+            0.411
+          ],
+          "relation": "behind",
+          "distance_m": 0.6594,
+          "reachable": true,
+          "natural_language": "0.7 m directly behind you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_021",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            2.028,
+            0.518,
+            -0.729
+          ],
+          "relation": "left",
+          "distance_m": 1.6926,
+          "reachable": true,
+          "natural_language": "1.7 m to your left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000098.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000099.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_024",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.53,
+            -0.193,
+            0.681
+          ],
+          "relation": "behind_right",
+          "distance_m": 0.7971,
+          "reachable": true,
+          "natural_language": "0.8 m to your back-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000094.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000093.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000096.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_025",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.806,
+            0.104,
+            0.588
+          ],
+          "relation": "behind",
+          "distance_m": 0.7243,
+          "reachable": true,
+          "natural_language": "0.7 m directly behind you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000029.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000088.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_030",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.855,
+            0.69,
+            -0.098
+          ],
+          "relation": "front_left",
+          "distance_m": 0.7245,
+          "reachable": true,
+          "natural_language": "0.7 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000039.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000038.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000040.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000028.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_036",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.592,
+            1.028,
+            -0.893
+          ],
+          "relation": "front_left",
+          "distance_m": 1.2807,
+          "reachable": true,
+          "natural_language": "1.3 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000031.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000032.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000033.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000035.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_052",
+          "label": "Picture/Frame",
+          "color": "green",
+          "p_world": [
+            0.495,
+            0.864,
+            -0.651
+          ],
+          "relation": "front_left",
+          "distance_m": 1.0044,
+          "reachable": true,
+          "natural_language": "1.0 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000037.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000038.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000039.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000040.jpg"
+          ]
+        }
+      ],
+      "raw_answer": "A",
+      "predicted_label": "A",
+      "answer_label": "A",
+      "is_correct": true,
+      "reference_answer": "It's behind you."
+    },
+    {
+      "qid": "scene0715_00-0_10",
+      "video_uid": "scene0715_00-0",
+      "question": "Where is the vacuum cleaner?",
+      "language": "en",
+      "timestamp_s": 7.0,
+      "category": "Ego-centric Position & Orientation Memory",
+      "subcategory": "Relative Position & Orientation Memory",
+      "qtype": "OTHER",
+      "task_difficulty": "medium",
+      "intent": {
+        "labels": [],
+        "colors": [],
+        "rooms": [],
+        "wants_location": true,
+        "wants_count": false,
+        "wants_reachability": false,
+        "wants_trajectory": false
+      },
+      "matched_count": 49,
+      "reachable_count": 16,
+      "spatial_items": [
+        {
+          "node_id": "entity_001",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            0.994,
+            0.059,
+            0.476
+          ],
+          "relation": "front_left",
+          "distance_m": 0.9503,
+          "reachable": true,
+          "natural_language": "1.0 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_002",
+          "label": "Couch",
+          "color": "orange",
+          "p_world": [
+            0.469,
+            0.703,
+            0.726
+          ],
+          "relation": "front_left",
+          "distance_m": 1.0471,
+          "reachable": true,
+          "natural_language": "1.0 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000008.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000007.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000005.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_004",
+          "label": "Carpet",
+          "color": "orange",
+          "p_world": [
+            0.6,
+            0.862,
+            0.564
+          ],
+          "relation": "front_left",
+          "distance_m": 1.1362,
+          "reachable": true,
+          "natural_language": "1.1 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000002.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000004.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000003.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000007.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_005",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            1.462,
+            -0.079,
+            0.233
+          ],
+          "relation": "front_left",
+          "distance_m": 1.3373,
+          "reachable": true,
+          "natural_language": "1.3 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000087.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000006.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000009.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_007",
+          "label": "Picture/Frame",
+          "color": "blue",
+          "p_world": [
+            -0.192,
+            -0.37,
+            1.007
+          ],
+          "relation": "behind_left",
+          "distance_m": 1.0164,
+          "reachable": true,
+          "natural_language": "1.0 m to your back-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000079.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000078.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000083.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000082.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_008",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            1.633,
+            0.138,
+            0.082
+          ],
+          "relation": "front_left",
+          "distance_m": 1.5137,
+          "reachable": true,
+          "natural_language": "1.5 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000010.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000012.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_009",
+          "label": "Picture/Frame",
+          "color": "gray",
+          "p_world": [
+            0.724,
+            0.057,
+            0.601
+          ],
+          "relation": "front_left",
+          "distance_m": 0.788,
+          "reachable": true,
+          "natural_language": "0.8 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000022.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_012",
+          "label": "Person",
+          "color": "orange",
+          "p_world": [
+            1.279,
+            0.077,
+            0.175
+          ],
+          "relation": "front_left",
+          "distance_m": 1.158,
+          "reachable": true,
+          "natural_language": "1.2 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000016.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_014",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            1.584,
+            1.011,
+            -0.356
+          ],
+          "relation": "front",
+          "distance_m": 1.8601,
+          "reachable": true,
+          "natural_language": "1.9 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000024.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000023.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_019",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.925,
+            -0.171,
+            0.411
+          ],
+          "relation": "front_left",
+          "distance_m": 0.8608,
+          "reachable": true,
+          "natural_language": "0.9 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000091.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000092.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000020.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_021",
+          "label": "Picture/Frame",
+          "color": "orange",
+          "p_world": [
+            2.028,
+            0.518,
+            -0.729
+          ],
+          "relation": "front",
+          "distance_m": 2.1469,
+          "reachable": true,
+          "natural_language": "2.1 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000021.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000098.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000099.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_024",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.53,
+            -0.193,
+            0.681
+          ],
+          "relation": "left",
+          "distance_m": 0.721,
+          "reachable": true,
+          "natural_language": "0.7 m to your left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000094.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000095.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000093.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000096.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_025",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.806,
+            0.104,
+            0.588
+          ],
+          "relation": "front_left",
+          "distance_m": 0.852,
+          "reachable": true,
+          "natural_language": "0.9 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000029.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000088.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000089.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000090.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_030",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.855,
+            0.69,
+            -0.098
+          ],
+          "relation": "front",
+          "distance_m": 1.0602,
+          "reachable": true,
+          "natural_language": "1.1 m directly in front of you (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000039.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000038.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000040.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000028.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_036",
+          "label": "Picture/Frame",
+          "color": "yellow",
+          "p_world": [
+            0.592,
+            1.028,
+            -0.893
+          ],
+          "relation": "front_right",
+          "distance_m": 1.5402,
+          "reachable": true,
+          "natural_language": "1.5 m to your front-right (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000031.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000032.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000033.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000035.jpg"
+          ]
+        },
+        {
+          "node_id": "entity_010",
+          "label": "Chair",
+          "color": "orange",
+          "p_world": [
+            0.668,
+            0.828,
+            0.51
+          ],
+          "relation": "front_left",
+          "distance_m": 1.1185,
+          "reachable": true,
+          "natural_language": "1.1 m to your front-left (within reach)",
+          "keyframes": [
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000011.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000013.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000096.jpg",
+            "/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline/frames/frame_000097.jpg"
+          ]
+        }
+      ],
+      "raw_answer": "B",
+      "predicted_label": "B",
+      "answer_label": "C",
+      "is_correct": false,
+      "reference_answer": "It's on your left front."
+    }
+  ]
+}

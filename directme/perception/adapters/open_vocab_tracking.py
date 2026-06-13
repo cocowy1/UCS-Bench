@@ -286,6 +286,210 @@ class SimpleIoUAppearanceTracker:
                 det.track_id = tid
         return detections
 
+def _as_pil_rgb_image(image: Any):
+    """Convert np.ndarray/PIL image to RGB PIL image for HF Grounding-DINO."""
+    from PIL import Image
+
+    if isinstance(image, Image.Image):
+        return image.convert("RGB")
+
+    arr = np.asarray(image)
+    if arr.ndim != 3 or arr.shape[2] != 3:
+        raise ValueError(f"Expected RGB image with shape (H, W, 3), got {arr.shape}")
+
+    if arr.dtype != np.uint8:
+        arr = np.clip(arr, 0, 255).astype(np.uint8)
+
+    return Image.fromarray(arr, mode="RGB")
+
+
+def _chunked(items: list[str], chunk_size: int) -> list[list[str]]:
+    chunk_size = max(1, int(chunk_size))
+    return [items[i:i + chunk_size] for i in range(0, len(items), chunk_size)]
+
+
+def _normalize_grounding_label(label: Any, classes: list[str] | None = None) -> str:
+    """Normalize HF Grounding-DINO labels back to user class names when possible."""
+    text = str(label).strip().strip(".").strip()
+
+    lowered = text.lower()
+    for prefix in ("a ", "an ", "the "):
+        if lowered.startswith(prefix):
+            lowered = lowered[len(prefix):]
+            break
+
+    if classes:
+        lookup = {c.lower().strip(): c for c in classes}
+        if lowered in lookup:
+            return lookup[lowered]
+
+    return text
+
+
+def _nms_detections(
+    detections: list[Detection],
+    iou_threshold: float = 0.60,
+    class_aware: bool = True,
+) -> list[Detection]:
+    """Small NMS to remove duplicates, useful when Grounding-DINO classes are batched."""
+    if not detections:
+        return detections
+
+    detections = sorted(detections, key=lambda d: d.score, reverse=True)
+    kept: list[Detection] = []
+
+    for det in detections:
+        suppress = False
+        for prev in kept:
+            if class_aware and det.label != prev.label:
+                continue
+            if _box_iou(det.bbox_xyxy, prev.bbox_xyxy) >= iou_threshold:
+                suppress = True
+                break
+        if not suppress:
+            kept.append(det)
+
+    return kept
+
+class GroundingDinoDetector:
+    """Grounding-DINO detector using local Hugging Face safetensors format.
+
+    Expected local directory:
+      config.json
+      model.safetensors
+      preprocessor_config.json
+      tokenizer files...
+    """
+
+    def __init__(
+        self,
+        model_path: str | Path = "./ckpts/grounding-dino-base",
+        classes: list[str] | None = None,
+        box_threshold: float = 0.30,
+        text_threshold: float = 0.25,
+        device: str = "auto",
+        class_batch_size: int = 40,
+        nms_iou_threshold: float = 0.60,
+        local_files_only: bool = True,
+    ):
+        try:
+            from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
+        except ImportError as exc:
+            raise ImportError(
+                "GroundingDinoDetector requires transformers. "
+                "Install with: pip install -U transformers accelerate safetensors"
+            ) from exc
+
+        self.model_path = str(model_path)
+        self.device = resolve_runtime_device(device)
+
+        path = Path(model_path)
+        if local_files_only:
+            if not path.exists():
+                raise FileNotFoundError(
+                    f"Grounding-DINO local HF model directory does not exist: {path}"
+                )
+            if not (path / "config.json").exists():
+                raise FileNotFoundError(
+                    f"Missing config.json in Grounding-DINO model directory: {path}"
+                )
+            if not ((path / "model.safetensors").exists() or (path / "pytorch_model.bin").exists()):
+                raise FileNotFoundError(
+                    f"Missing model.safetensors or pytorch_model.bin in: {path}"
+                )
+
+        print(f"[INFO] Loading HF Grounding-DINO from: {self.model_path}")
+        print(f"[INFO] local_files_only: {local_files_only}")
+
+        self.processor = AutoProcessor.from_pretrained(
+            self.model_path,
+            local_files_only=local_files_only,
+        )
+        self.model = AutoModelForZeroShotObjectDetection.from_pretrained(
+            self.model_path,
+            local_files_only=local_files_only,
+        )
+
+        self.model.to(self.device)
+        self.model.eval()
+
+        self.classes = classes
+        self.box_threshold = box_threshold
+        self.text_threshold = text_threshold
+        self.class_batch_size = class_batch_size
+        self.nms_iou_threshold = nms_iou_threshold
+
+    def set_classes(self, classes: list[str]) -> None:
+        self.classes = classes
+
+    @torch.inference_mode()
+    def detect(self, image: Any) -> list[Detection]:
+        if not self.classes:
+            raise ValueError(
+                "GroundingDINO requires non-empty classes/text prompts. "
+                "Pass --classes, --classes-file, or category_preset='basic/objects365'."
+            )
+
+        pil_image = _as_pil_rgb_image(image)
+        h, w = pil_image.height, pil_image.width
+
+        all_detections: list[Detection] = []
+
+        for class_chunk in _chunked(self.classes, self.class_batch_size):
+            # HF Grounding-DINO accepts text_labels like:
+            # [["a cat", "a remote control"]]
+            text_labels = [[str(c).strip() for c in class_chunk if str(c).strip()]]
+
+            inputs = self.processor(
+                images=pil_image,
+                text=text_labels,
+                return_tensors="pt",
+            ).to(self.device)
+
+            outputs = self.model(**inputs)
+
+            results = self.processor.post_process_grounded_object_detection(
+                outputs,
+                inputs.input_ids,
+                threshold=self.box_threshold,
+                text_threshold=self.text_threshold,
+                target_sizes=[(h, w)],
+            )
+
+            result = results[0]
+            boxes = result["boxes"]
+            scores = result["scores"]
+            labels = result.get("labels", ["object"] * len(boxes))
+
+            for box, score, label in zip(boxes, scores, labels):
+                score_f = float(score.detach().cpu().item())
+                if score_f < self.box_threshold:
+                    continue
+
+                box_np = box.detach().cpu().numpy()
+                x1, y1, x2, y2 = [float(v) for v in box_np.tolist()]
+
+                x1 = max(0.0, min(float(w), x1))
+                x2 = max(0.0, min(float(w), x2))
+                y1 = max(0.0, min(float(h), y1))
+                y2 = max(0.0, min(float(h), y2))
+
+                if x2 <= x1 or y2 <= y1:
+                    continue
+
+                all_detections.append(
+                    Detection(
+                        label=_normalize_grounding_label(label, self.classes),
+                        bbox_xyxy=(x1, y1, x2, y2),
+                        score=score_f,
+                    )
+                )
+
+        return _nms_detections(
+            all_detections,
+            iou_threshold=self.nms_iou_threshold,
+            class_aware=True,
+        )
 
 class YoloWorldDetector:
     """Open-vocabulary detector using Ultralytics YOLO-World."""
@@ -401,7 +605,8 @@ class OpenVocabularyTrackingAdapter:
 
     def __init__(
         self,
-        detector: YoloWorldDetector,
+        detector: Any,
+
         segmenter: Sam2MaskRefiner | None = None,
         tracker: SimpleIoUAppearanceTracker | None = None,
         detection_stride: int = 5,
@@ -599,6 +804,13 @@ def test_open_vocab_tracking_on_spatialmemory_frames(
     weights: str = "yolov8s-worldv2.pt",
     classes: list[str] | None = None,
     score_threshold: float = 0.20,
+    detector_backend: str = "grounding-dino",
+    grounding_dino_model_path: str | Path = "./ckpts/grounding-dino-base",
+    grounding_dino_local_files_only: bool = True,
+    grounding_dino_box_threshold: float | None = None,
+    grounding_dino_text_threshold: float = 0.25,
+    grounding_dino_class_batch_size: int = 40,
+    grounding_dino_nms_iou: float = 0.60,
     device: str = "auto",
     detection_stride: int = 1,
     use_sam2: bool = False,
@@ -617,7 +829,7 @@ def test_open_vocab_tracking_on_spatialmemory_frames(
     print(f"[INFO] Selected frame dir: {frame_dir}")
     print(f"[INFO] Total frames in dir: {len(all_images)}")
     print(f"[INFO] Test frames: {len(image_paths)}")
-    print(f"[INFO] YOLO-World weights: {weights}")
+    print(f"[INFO] use detector: {detector_backend}")
     print(f"[INFO] use_sam2: {use_sam2}")
     print(f"[INFO] detection_stride: {detection_stride}")
     print(f"[INFO] score_threshold: {score_threshold}")
@@ -628,12 +840,41 @@ def test_open_vocab_tracking_on_spatialmemory_frames(
         print(f"[INFO] classes count: {len(classes)}")
         print(f"[INFO] classes preview: {classes[:20]}")
 
-    detector = YoloWorldDetector(
-        weights=weights,
-        classes=classes,
-        score_threshold=score_threshold,
-        device=device,
-    )
+    detector_backend = detector_backend.lower().strip()
+
+    if detector_backend == "yolo-world":
+        detector = YoloWorldDetector(
+            weights=weights,
+            classes=classes,
+            score_threshold=score_threshold,
+            device=device,
+        )
+
+    elif detector_backend == "grounding-dino":
+        if classes is None:
+            raise ValueError(
+                "Grounding-DINO needs text prompts/classes. "
+                "Use --classes, --classes-file, or --category-preset basic/objects365."
+            )
+
+        detector = GroundingDinoDetector(
+            model_path=grounding_dino_model_path,
+            classes=classes,
+            box_threshold=(
+                score_threshold
+                if grounding_dino_box_threshold is None
+                else grounding_dino_box_threshold
+            ),
+            text_threshold=grounding_dino_text_threshold,
+            device=device,
+            class_batch_size=grounding_dino_class_batch_size,
+            nms_iou_threshold=grounding_dino_nms_iou,
+            local_files_only=grounding_dino_local_files_only,
+        )
+
+    else:
+        raise ValueError(f"Unknown detector_backend: {detector_backend}")
+
 
     segmenter = None
     if use_sam2:
@@ -718,12 +959,56 @@ def _main() -> int:
     parser.add_argument(
         "--weights",
         type=str,
-        default="./ckpts/yolo/yolov8m-worldv2.pt",
-        help="YOLO-World weights, e.g. yolov8s-worldv2.pt / yolov8m-worldv2.pt.",
+        default="/data/ywang/my_projects/VideoUnderstanding/Directme/ckpts/yolo/yolov8m-worldv2.pt",
+        help="YOLO-World weights",
     )
     parser.add_argument("--score-threshold", type=float, default=0.20)
     parser.add_argument("--device", type=str, default="auto")
     parser.add_argument("--detection-stride", type=int, default=1)
+
+    parser.add_argument(
+        "--detector",
+        type=str,
+        default="grounding-dino",
+        choices=["yolo-world", "grounding-dino"],
+        help="Detector backend.",
+    )
+
+    parser.add_argument(
+        "--grounding-dino-model-path",
+        type=str,
+        default="/data/ywang/my_projects/VideoUnderstanding/Directme/ckpts/grounding-dino-base",
+        help="Local Hugging Face-format Grounding-DINO directory containing config.json and model.safetensors.",
+    )
+
+    parser.add_argument(
+        "--allow-hf-download",
+        action="store_true",
+        help="Allow transformers to download missing Grounding-DINO files. Default is offline/local-only.",
+    )
+
+    parser.add_argument(
+        "--grounding-dino-box-threshold",
+        type=float,
+        default=None,
+        help="Grounding-DINO box threshold. If omitted, uses --score-threshold.",
+    )
+    parser.add_argument(
+        "--grounding-dino-text-threshold",
+        type=float,
+        default=0.25,
+    )
+    parser.add_argument(
+        "--grounding-dino-class-batch-size",
+        type=int,
+        default=40,
+        help="Number of class prompts per Grounding-DINO forward pass.",
+    )
+    parser.add_argument(
+        "--grounding-dino-nms-iou",
+        type=float,
+        default=0.60,
+    )
 
     parser.add_argument(
         "--category-preset",
@@ -741,7 +1026,7 @@ def _main() -> int:
     parser.add_argument(
         "--classes-file",
         type=str,
-        default="directme/perception/adapters/Object.yaml",
+        default="/data/ywang/my_projects/VideoUnderstanding/Directme/directme/perception/adapters/Object.yaml",
         help="Txt/json/yaml class names file. Use this for full Objects365 categories.",
     )
     parser.add_argument(
@@ -761,12 +1046,12 @@ def _main() -> int:
     parser.add_argument(
         "--sam2-checkpoint",
         type=str,
-        default="./ckpts/sam2/sam2.1_hiera_base_plus.pt",
+        default="/data/ywang/my_projects/VideoUnderstanding/Directme/ckpts/sam2/sam2.1_hiera_base_plus.pt",
     )
     parser.add_argument(
         "--sam2-config",
         type=str,
-        default="./configs/sam2.1/sam2.1_hiera_b+.yaml",
+        default="configs/sam2.1/sam2.1_hiera_b+.yaml",
     )
 
     parser.add_argument(
@@ -792,6 +1077,13 @@ def _main() -> int:
         weights=args.weights,
         classes=classes,
         score_threshold=args.score_threshold,
+        detector_backend=args.detector,
+        grounding_dino_model_path=args.grounding_dino_model_path,
+        grounding_dino_local_files_only=not args.allow_hf_download,
+        grounding_dino_box_threshold=args.grounding_dino_box_threshold,
+        grounding_dino_text_threshold=args.grounding_dino_text_threshold,
+        grounding_dino_class_batch_size=args.grounding_dino_class_batch_size,
+        grounding_dino_nms_iou=args.grounding_dino_nms_iou,
         device=args.device,
         detection_stride=args.detection_stride,
         use_sam2=args.use_sam2,
@@ -799,6 +1091,7 @@ def _main() -> int:
         sam2_config=args.sam2_config,
         save_dir=args.save_dir,
     )
+
 
     return 0
 

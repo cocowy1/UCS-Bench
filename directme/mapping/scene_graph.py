@@ -210,7 +210,7 @@ class EntityNode:
             merged /= n
         self.attributes["semantic_embedding"] = merged.tolist()
 
-    def _get_keyframe_selector(self, budget: int) -> "KeyframeSelector":
+    def _get_keyframe_selector(self, budget: int):
         """Return the lazily-instantiated diversity selector.
 
         The selector is in-memory only (not persisted): on graph load we
