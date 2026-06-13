@@ -1,4 +1,4 @@
-# DirectMe: Video Understanding with Perception-Driven Scene Graph Reasoning
+# Keep It in Mind: User Centric Continual Spatial Intelligence Reasoning in Egocentric Video Streams
 
 DirectMe is an advanced video understanding framework that integrates state-of-the-art perception modules to build metric 3D scene graphs, enabling spatial question-answering (QA) and geometric video retrieval through structured reasoning over real-world environments.
 
@@ -24,13 +24,7 @@ conda activate DirectMe
 ```
 *Note: The `DirectMe` conda environment contains all core dependencies with exact versions for full reproducibility.*
 
-3. Export and generate requirements.txt from the active conda environment (if needed):
-```bash
-# Verify dependencies are correctly installed
-pip install -r requirements.txt
-```
-
-4. Download pre-trained models:
+3. Download pre-trained models:
 Follow the instructions in the model configuration files to download all required pre-trained models:
 - SCAL3R checkpoint for depth and SE3 camera pose estimation
 - YOLO-Worldv2 weights for open-vocabulary object detection
