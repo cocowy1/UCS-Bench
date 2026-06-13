@@ -2,6 +2,16 @@
 
 DirectMe is an advanced video understanding framework that integrates state-of-the-art perception modules to build metric 3D scene graphs, enabling spatial question-answering (QA) and geometric video retrieval through structured reasoning over real-world environments.
 
+
+
+https://github.com/user-attachments/assets/2a0cf554-4a35-46db-98be-e0e8c6f411f6
+
+
+
+https://github.com/user-attachments/assets/01d55770-abed-45de-ae98-2ef60cbc6c9b
+
+
+
 ## 🛠️ Environment Setup & Installation
 
 ### Prerequisites
