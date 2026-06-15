@@ -2,7 +2,10 @@
 
 # UCS-Bench / DirectMe
 
-**Keep It in Mind: User-Centric Continual Spatial Intelligence Reasoning in Egocentric Video Streams**
+# 🧠 Keep It in Mind: User-Centric Continual Spatial Intelligence Reasoning in Egocentric Video Streams
+
+### 📍 ICML 2026
+
 
 [![Paper](https://img.shields.io/badge/Paper-ICML%202026-blue)](https://icml.cc/virtual/2026/poster/63682)
 [![Dataset](https://img.shields.io/badge/Dataset-Hugging%20Face-yellow)](https://huggingface.co/datasets/cocowy1/UCS-Bench)
