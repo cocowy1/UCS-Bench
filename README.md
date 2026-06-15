@@ -428,7 +428,7 @@ The full BibTeX will be updated after the official proceedings metadata is avail
 
 ## Acknowledgements
 
-We thank the authors and maintainers of Depth Anything 3, Scal3R, SAM2, YOLO-World, and the open-source egocentric video datasets that support research in spatial intelligence.
+We thank the authors and maintainers of Depth Anything 3, Scal3R, SAM2, Grounding_DINO, YOLO-World, and the open-source egocentric video datasets that support research in spatial intelligence.
 
 ## License
 
