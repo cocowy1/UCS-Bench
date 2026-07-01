@@ -419,11 +419,11 @@ https://huggingface.co/datasets/cocowy1/UCS-Bench
 If you find UCS-Bench or DirectMe useful, please cite our work:
 
 ```bibtex
-@misc{ucsbench2026,
-  title = {Keep It in Mind: User-Centric Continual Spatial Intelligence Reasoning in Egocentric Video Streams},
-  year = {2026},
-  note = {ICML 2026},
-  url = {https://icml.cc/virtual/2026/poster/63682}
+@article{wang2026keep,
+  title={Keep It in Mind: User Centric Continual Spatial Intelligence Reasoning in Egocentric Video Streams},
+  author={Wang, Yun and Xiao, Junbin and Lyu, Han and Wang, Yifan and Zuo, Jing and Zhang, Zhanjie and Huang, Hong and Wu, Dapeng and Yao, Angela},
+  journal={arXiv preprint arXiv:2606.15200},
+  year={2026}
 }
 ```
 
