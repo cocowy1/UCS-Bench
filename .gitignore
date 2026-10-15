@@ -45,9 +45,9 @@ checkpoints/
 *.safetensors
 *.bin
 
-# data / outputs
-data/
-datasets/
+# data / outputs (anchored to repo root so directme/data/ and directme/datasets/ stay tracked)
+/data/
+/datasets/
 tmp/
 outputs/
 vis_output/
