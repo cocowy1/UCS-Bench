@@ -360,6 +360,20 @@ python examples/evaluate_ucsbench_vlm.py \
   --out results/directme_qwen3vl.json
 ```
 
+### 4. VLM baselines (uniform / stream frame sampling)
+
+The baseline rows (Qwen2.5-VL / Qwen3-VL / InternVL3 / InternVL3.5 /
+Cambrian-S / VG-LLM with uniformly sampled or most-recent K=64 frames, plus
+the proprietary API models GPT-5 / DeepSeek-V3 / Doubao-seed-1.6V /
+Gemini-3-Flash with up to 50 images) use separate per-model scripts:
+
+```text
+directme/eval/baselines/
+```
+
+See [`directme/eval/baselines/README.md`](directme/eval/baselines/README.md)
+for data preparation, environments, and the exact launch commands.
+
 ## Output Files
 
 Typical output files include:
