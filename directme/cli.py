@@ -46,13 +46,13 @@ def cmd_demo(args: argparse.Namespace) -> None:
     graph.save_json(graph_path)
 
     current_pose = SE3.from_translation([7.0, 0.0, 0.0])
-    question = "我身边有几个红杯子？在哪？"
+    question = "How many red cups are around me? And where are they?"
     retriever = GraphRetriever(
         graph,
         reachable_radius_m=config.retrieval.reachable_radius_m,
         lateral_tolerance_ratio=config.retrieval.lateral_tolerance_ratio,
     )
-    context = retriever.retrieve(question, current_pose, language="zh")
+    context = retriever.retrieve(question, current_pose, language="en")
     answer = RuleBasedAnswerGenerator().answer(context)
 
     print(f"Graph saved to {graph_path}")

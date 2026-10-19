@@ -362,8 +362,8 @@ def _mask_or_bbox_to_image_mask(
     if x2 <= x1 or y2 <= y1:
         return None
 
-    # 最小改动：bbox 取中心区域，减少背景污染。
-    # 对没有 SAM2 mask 的情况，颜色会明显更稳。
+    # Minimal change: keep only the central region of the bbox to reduce background contamination.
+    # Without a SAM2 mask, colors are noticeably more stable.
     shrink = 0.15
     bw = x2 - x1
     bh = y2 - y1

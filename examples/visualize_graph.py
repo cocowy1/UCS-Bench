@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """Render a top-down PNG/PDF of an existing scene graph + optional QA/query overlay.
 
-支持两种用法：
+Two usage modes are supported:
 
-1. 手动传 question：
+1. Pass a question manually:
 
     python examples/visualize_graph.py \
         --graph tmp/directme_scal3r_full_pipeline/directme_mapping_run/scene_graph.json \
-        --question "我身边有几个红杯子？" \
+        --question "How many red cups are around me?" \
         --current-pose-json "[[1,0,0,7],[0,1,0,0],[0,0,1,0],[0,0,0,1]]" \
         --out tmp/directme_scal3r_full_pipeline/directme_mapping_run/topdown2.png
 
-2. 从 UCS-Bench/DirectMe QA JSON 中读取 question + question_timestamps：
+2. Read question + question_timestamps from a UCS-Bench/DirectMe QA JSON:
 
     python examples/visualize_graph.py \
         --graph tmp/directme_scal3r_full_pipeline/directme_mapping_run/scene_graph.json \
@@ -72,7 +72,7 @@ def _load_qa_items(path: str | Path) -> list[dict[str, Any]]:
     if isinstance(data, list):
         return data
 
-    # 兼容 {"items": [...]} / {"qas": [...]} / {"questions": [...]} 等格式。
+    # Support formats like {"items": [...]} / {"qas": [...]} / {"questions": [...]}.
     if isinstance(data, dict):
         for key in ("items", "qas", "questions", "data"):
             if isinstance(data.get(key), list):
@@ -113,12 +113,12 @@ def _resolve_out_path(out_arg: str | None, graph_path: str | Path, qid: str | No
     if out_arg:
         out = Path(out_arg)
 
-        # 如果传的是目录，自动补一个文件名。
+        # If a directory is given, fill in a file name automatically.
         if out.exists() and out.is_dir():
             name = f"topdown_{qid}.png" if qid else "topdown.png"
             return out / name
 
-        # 如果没有后缀，也当成目录处理。
+        # If it has no suffix, treat it as a directory too.
         if out.suffix.lower() not in {".png", ".pdf"}:
             name = f"topdown_{qid}.png" if qid else "topdown.png"
             return out / name
@@ -147,7 +147,7 @@ def main() -> None:
         help="output image path (.png or .pdf), or a directory",
     )
 
-    # 手动 query 模式。
+    # Manual query mode.
     p.add_argument(
         "--question",
         default=None,
@@ -159,7 +159,7 @@ def main() -> None:
         help="optional 4x4 T_world_from_current_camera JSON matrix; overrides QA timestamp pose",
     )
 
-    # QA JSON 模式。
+    # QA JSON mode.
     p.add_argument(
         "--qa-json",
         default="/data/ywang/dataset/SpatialMemory/MC_QAs_v15_norm/scene0715_00-0-mcq.json",

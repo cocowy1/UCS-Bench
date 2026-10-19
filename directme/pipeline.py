@@ -20,7 +20,7 @@ from directme.retrieval.retriever import GraphRetriever, RetrievedContext
 
 
 # ---------------------------------------------------------------------------
-# 本地 VLM 生成器基类
+# Local VLM generator base class
 # ---------------------------------------------------------------------------
 def _infer_model_device(model) -> str:
     try:
@@ -30,7 +30,7 @@ def _infer_model_device(model) -> str:
 
 
 class LocalVLMGenerator(AnswerGenerator):
-    """本地多模态大模型生成器的抽象基类。"""
+    """Abstract base class for local multimodal LLM generators."""
 
     @abstractmethod
     def answer_multimodal(self, system_prompt: str, text: str, images: list) -> str:
@@ -43,15 +43,15 @@ class LocalVLMGenerator(AnswerGenerator):
 
 
 # ---------------------------------------------------------------------------
-# Qwen3-VL 生成器
+# Qwen3-VL generator
 # ---------------------------------------------------------------------------
 
 @dataclass
 class QwenVLGenerator(LocalVLMGenerator):
-    """Qwen3-VL 本地推理生成器。
+    """Qwen3-VL local inference generator.
 
-    使用 transformers Qwen3VLForConditionalGeneration +
-    processor.apply_chat_template() 处理多图 + 文本。
+    Uses transformers Qwen3VLForConditionalGeneration +
+    processor.apply_chat_template() to handle multi-image + text input.
     """
 
     model_path: str
@@ -68,14 +68,14 @@ class QwenVLGenerator(LocalVLMGenerator):
         import torch
         from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
 
-        print(f"[QwenVL] 加载模型：{self.model_path}")
+        print(f"[QwenVL] Loading model: {self.model_path}")
         self._model = Qwen3VLForConditionalGeneration.from_pretrained(
             self.model_path,
             torch_dtype=torch.bfloat16,
             device_map=self.device_map,
         ).eval()
         self._processor = AutoProcessor.from_pretrained(self.model_path)
-        print("[QwenVL] 模型加载完成。")
+        print("[QwenVL] Model loaded.")
 
     @staticmethod
     def _resize(image, max_size: int):
@@ -126,7 +126,7 @@ class QwenVLGenerator(LocalVLMGenerator):
 
 
 # ---------------------------------------------------------------------------
-# InternVL3 生成器
+# InternVL3 generator
 # ---------------------------------------------------------------------------
 
 _IMAGENET_MEAN = (0.485, 0.456, 0.406)
@@ -155,7 +155,7 @@ def _internvl_pixel_values(images: list, image_size: int = 448, dtype=None, devi
 
 @dataclass
 class InternVLGenerator(LocalVLMGenerator):
-    """InternVL3 本地推理生成器。"""
+    """InternVL3 local inference generator."""
 
     model_path: str
     device_map: str = "auto"
@@ -173,39 +173,41 @@ class InternVLGenerator(LocalVLMGenerator):
         from pathlib import Path
         from transformers import AutoModel, AutoTokenizer
 
-        print(f"[InternVL] 开始加载模型（最终强解路径模式）：{self.model_path}")
+        print(f"[InternVL] Loading model (forced path-override mode): {self.model_path}")
 
         # =====================================================================
-        # 核心必杀技：通过物理符号链接（Symlink）强行劫持并修复 HF 损坏的缓存路径
+        # Key trick: forcibly hijack and repair the broken HF cache path via a
+        # physical symlink
         # =====================================================================
         try:
-            # 1. 锁死报错中提示的绝对目标缓存目录
+            # 1. Pin the absolute target cache directory named in the error
             target_cache_dir = Path("/data/ywang/hf_modules_cache/transformers_modules/InternVL3_hyphen_8B/235c253589d1ed24")
             local_model_dir = Path(self.model_path).resolve()
 
             if not target_cache_dir.exists():
-                print(f"[InternVL] 检测到悬空缓存路径不存在，正在手动建立物理软链接...")
-                # 创建父级目录
+                print(f"[InternVL] Dangling cache path missing; creating a physical symlink manually...")
+                # Create the parent directory
                 target_cache_dir.parent.mkdir(parents=True, exist_ok=True)
-                # 将 HF 锁死的缓存目录直接软链接到你的本地完整 ckpt 目录
+                # Symlink the HF-pinned cache directory directly to the local full checkpoint directory
                 os.symlink(str(local_model_dir), str(target_cache_dir), target_is_directory=True)
-                print(f"[InternVL] 软链接建立成功: {target_cache_dir} -> {local_model_dir}")
+                print(f"[InternVL] Symlink created: {target_cache_dir} -> {local_model_dir}")
             else:
-                # 如果它是个残缺的物理目录（导致文件缺失），删掉它并重构为完整的软链接
+                # If it is an incomplete physical directory (missing files), remove it
+                # and rebuild it as a full symlink
                 if not (target_cache_dir / "configuration_intern_vit.py").exists():
-                    print(f"[InternVL] 检测到残缺缓存目录，正在强行修正为全量软链接...")
+                    print(f"[InternVL] Detected an incomplete cache directory; forcibly replacing it with a full symlink...")
                     import shutil
                     if target_cache_dir.is_symlink() or target_cache_dir.is_file():
                         os.unlink(target_cache_dir)
                     else:
                         shutil.rmtree(target_cache_dir)
                     os.symlink(str(local_model_dir), str(target_cache_dir), target_is_directory=True)
-                    print(f"[InternVL] 修正完成。")
+                    print(f"[InternVL] Fix complete.")
         except Exception as sym_err:
-            print(f"[WARN] 建立路径劫持锁时发生异常（可忽略）: {sym_err}")
+            print(f"[WARN] Exception while setting up the path override (ignorable): {sym_err}")
         # =====================================================================
 
-        # 2. 注入全局离线变量，确保不产生任何外部网络握手
+        # 2. Inject global offline variables to avoid any external network handshake
         os.environ["TRANSFORMERS_OFFLINE"] = "1"
         os.environ["HF_DATASETS_OFFLINE"] = "1"
 
@@ -213,7 +215,7 @@ class InternVLGenerator(LocalVLMGenerator):
         if abs_model_path not in sys.path:
             sys.path.insert(0, abs_model_path)
 
-        # 3. 正常加载模型（移除了 local_files_only 防止触发 HF 固有的只读死锁）
+        # 3. Load the model normally (local_files_only removed to avoid HF's read-only deadlock)
         self._model = AutoModel.from_pretrained(
             self.model_path,
             dtype=torch.bfloat16,
@@ -227,7 +229,7 @@ class InternVLGenerator(LocalVLMGenerator):
             use_fast=False,
         )
 
-        print("[InternVL] 模型加载成功！")
+        print("[InternVL] Model loaded successfully.")
 
 
     def answer_multimodal(self, system_prompt: str, text: str, images: list) -> str:
@@ -261,7 +263,7 @@ class InternVLGenerator(LocalVLMGenerator):
 
 
 # ---------------------------------------------------------------------------
-# COUNT 题确定性计数辅助
+# Deterministic counting helpers for COUNT questions
 # ---------------------------------------------------------------------------
 
 _NUMBER_WORDS_EN = {
@@ -278,19 +280,19 @@ _NUMBER_WORDS_ZH = {
 
 
 def _extract_count_from_option(text: str) -> int | None:
-    """从选项文本中提取整数（阿拉伯数字 > 英文单词 > 中文单词）。"""
+    """Extract an integer from option text (Arabic digits > English words > Chinese words)."""
     if not text:
         return None
-    # 阿拉伯数字
+    # Arabic digits
     m = _re.search(r"\d+", text)
     if m:
         return int(m.group(0))
     lower = text.lower()
-    # 英文数字单词
+    # English number words
     for word, val in _NUMBER_WORDS_EN.items():
         if _re.search(rf"\b{word}\b", lower):
             return val
-    # 中文数字
+    # Chinese numerals
     for word, val in _NUMBER_WORDS_ZH.items():
         if word in text:
             return val
@@ -298,12 +300,12 @@ def _extract_count_from_option(text: str) -> int | None:
 
 
 def _map_count_to_option(count: int, options: list[str], labels: str) -> str | None:
-    """将整数 count 映射到数字最接近的选项字母。
+    """Map an integer count to the option letter with the closest number.
 
-    UCS-Bench 的 COUNT 题每个选项含一个数字，例如：
+    Each option of a UCS-Bench COUNT question contains a number, e.g.:
       A. There are six sheets ...   → 6
       B. There are seven sheets ... → 7  ← GT
-    选 |opt_n - count| 最小的字母。
+    Pick the letter minimizing |opt_n - count|.
     """
     best_label, best_diff = None, None
     for label, opt_text in zip(labels, options):
@@ -317,21 +319,21 @@ def _map_count_to_option(count: int, options: list[str], labels: str) -> str | N
 
 
 # ---------------------------------------------------------------------------
-# DirectMe 编排器
+# DirectMe orchestrator
 # ---------------------------------------------------------------------------
 
 @dataclass
 class DirectMe:
-    """DirectMe 高层编排器。
+    """DirectMe high-level orchestrator.
 
-    创建方式
-    --------
-    dm = DirectMe.with_empty_graph()                    # 规则生成器
+    Construction
+    ------------
+    dm = DirectMe.with_empty_graph()                    # rule-based generator
     dm = DirectMe.with_qwen(model_path="...")           # Qwen3-VL
     dm = DirectMe.with_internvl(model_path="...")       # InternVL3
 
-    问答接口
-    --------
+    QA interface
+    ------------
     dm.answer(question, current_pose)
     raw, label = dm.answer_mc(question, options, current_pose,
                                qtype="COUNT", as_of_timestamp=3.0)
@@ -341,7 +343,7 @@ class DirectMe:
     graph: SceneGraph
     generator: AnswerGenerator
 
-    # ── 工厂方法 ──────────────────────────────────────────────────────────────
+    # ── Factory methods ──────────────────────────────────────────────────────────────
 
     @classmethod
     def with_empty_graph(
@@ -400,7 +402,7 @@ class DirectMe:
         )
         return cls(config=config, graph=graph, generator=generator)
 
-    # ── 建图 ─────────────────────────────────────────────────────────────────
+    # ── Scene-graph building ─────────────────────────────────────────────────────────────────
 
     def build_memory(
         self,
@@ -484,7 +486,7 @@ class DirectMe:
             artifact_video_fps=fps,
         )
 
-    # ── 检索 ─────────────────────────────────────────────────────────────────
+    # ── Retrieval ─────────────────────────────────────────────────────────────────
 
     def _retriever(self) -> GraphRetriever:
         return GraphRetriever(
@@ -498,7 +500,7 @@ class DirectMe:
         question: str,
         current_pose: SE3,
         language: str | None = None,
-        as_of_timestamp: float | None = None,   # 改动 C：透传给 retriever
+        as_of_timestamp: float | None = None,   # Change C: pass through to the retriever
     ) -> RetrievedContext:
         return self._retriever().retrieve(
             question=question,
@@ -508,7 +510,7 @@ class DirectMe:
             as_of_timestamp=as_of_timestamp,
         )
 
-    # ── 自由文本问答 ──────────────────────────────────────────────────────────
+    # ── Free-text QA ──────────────────────────────────────────────────────────
 
     def answer(
         self,
@@ -523,7 +525,7 @@ class DirectMe:
         )
         return self.generator.answer(context)
 
-    # ── 多选题问答（UCS-Bench 核心路径） ─────────────────────────────────────
+    # ── Multiple-choice QA (core UCS-Bench path) ─────────────────────────────────────
 
     def answer_mc(
         self,
@@ -532,22 +534,23 @@ class DirectMe:
         current_pose: SE3,
         language: str | None = None,
         option_labels: str = "ABCDE",
-        qtype: str | None = None,               # 改动 C：COUNT 题走确定性计数
-        as_of_timestamp: float | None = None,   # 改动 C：在线 QA 时间戳过滤
+        qtype: str | None = None,               # Change C: COUNT questions use deterministic counting
+        as_of_timestamp: float | None = None,   # Change C: timestamp filtering for online QA
     ) -> tuple[str, str | None]:
-        """多选题问答。
+        """Multiple-choice QA.
 
-        路径分发
-        --------
-        1. COUNT 且目标类别稳定 → deterministic scene-graph counting
-        2. COUNT 且目标类别易过分裂 → VLM visual counting
-        3. RuleBasedAnswerGenerator → Jaccard 降级匹配
-        4. 本地 VLM → MC 提示 + keyframe 图像
+        Path dispatch
+        -------------
+        1. COUNT with a stable target category → deterministic scene-graph counting
+        2. COUNT with an over-splitting-prone target category → VLM visual counting
+        3. RuleBasedAnswerGenerator → Jaccard fallback matching
+        4. Local VLM → MC prompt + keyframe images
 
         Parameters
         ----------
-        qtype            : UCS-Bench QA type，如 "COUNT" / "BINARY" / "OTHER"
-        as_of_timestamp  : 查询时刻（秒），仅检索此前已观测到的节点
+        qtype            : UCS-Bench QA type, e.g. "COUNT" / "BINARY" / "OTHER"
+        as_of_timestamp  : query time (seconds); only nodes observed before it
+                           are retrieved
         """
 
 
@@ -560,7 +563,7 @@ class DirectMe:
         is_count = _is_count_question(qtype, question, ctx)
         is_noisy_count = is_count and _is_noisy_count_target(question, ctx)
 
-        # ── COUNT 题：只对安全类别走 deterministic count ────────────────────
+        # ── COUNT questions: deterministic count only for safe categories ──
         if is_count and ctx.count > 0:
             if not is_noisy_count:
                 count = int(ctx.count)
@@ -568,7 +571,7 @@ class DirectMe:
                 if predicted is not None:
                     raw = f"[deterministic count] scene_graph_count={count}"
                     return raw, predicted
-                # 如果无法从选项中抽取数字，不 return，继续走 VLM
+                # If no number can be extracted from the options, fall through to the VLM
         # ─────────────────────────────────────────────────────────────────────
 
         if isinstance(self.generator, RuleBasedAnswerGenerator):
@@ -607,7 +610,7 @@ class DirectMe:
                         images.append(im.convert("RGB"))
 
         assert isinstance(self.generator, LocalVLMGenerator), (
-            f"answer_mc() 需要 LocalVLMGenerator，当前为 {type(self.generator)}"
+            f"answer_mc() requires a LocalVLMGenerator, got {type(self.generator)}"
         )
         raw = self.generator.answer_multimodal(system_prompt, text, images)
         predicted = MultipleChoicePromptBuilder.parse_answer(raw, labels)
@@ -615,11 +618,11 @@ class DirectMe:
 
 
 # ---------------------------------------------------------------------------
-# 内部辅助
+# Internal helpers
 # ---------------------------------------------------------------------------
 
 def _match_option_by_text(answer: str, options: dict[str, str]) -> str | None:
-    """Jaccard 降级：将生成答案映射到最近选项字母。"""
+    """Jaccard fallback: map a generated answer to the closest option letter."""
     def _tok(s: str) -> set[str]:
         return set(_re.findall(r"[a-z\u4e00-\u9fff]+", s.lower()))
 
@@ -639,7 +642,7 @@ def _match_option_by_text(answer: str, options: dict[str, str]) -> str | None:
     return best_label if best_score > 0 else None
 
 def _is_count_question(qtype: str | None, question: str, ctx: Any | None = None) -> bool:
-    """判断是否为计数题。不要只依赖 qtype 字段。"""
+    """Decide whether this is a counting question. Do not rely solely on the qtype field."""
     if qtype and str(qtype).strip().upper() == "COUNT":
         return True
 
@@ -656,21 +659,25 @@ def _is_count_question(qtype: str | None, question: str, ctx: Any | None = None)
 
 
 def _is_noisy_count_target(question: str, ctx: Any) -> bool:
-    """判断 COUNT 题是否不适合直接用 scene graph node count。
+    """Decide whether a COUNT question is unsuitable for direct scene-graph node counting.
 
-    以下类别容易在建图时被过分裂（一个真实物体 → 多个 node），
-    导致 ctx.count 系统性偏大，应退回 VLM 视觉计数：
+    The categories below are prone to over-splitting during mapping (one real
+    object → multiple nodes), which systematically inflates ctx.count; these
+    should fall back to VLM visual counting:
 
-    * paper / sheet / page / poster：感知端常被识别为 Picture/Frame，
-      且同一张纸在多帧中反复被检测，fusion 难以完全去重；
-    * picture / photo / frame / wall-mounted：与 paper 同属高分裂风险；
-    * on the wall：语义约束（仅数墙面物体）不在当前建图中显式建模。
+    * paper / sheet / page / poster: often perceived as Picture/Frame, and the
+      same sheet is detected repeatedly across frames, so fusion cannot fully
+      de-duplicate them;
+    * picture / photo / frame / wall-mounted: same high over-splitting risk as paper;
+    * on the wall: the semantic constraint (counting only wall-mounted objects)
+      is not explicitly modeled in the current mapping.
 
-    安全类别（cup、chair、bottle 等实体感强的单体物品）仍走 deterministic count。
+    Safe categories (compact, well-individuated objects such as cup, chair, and
+    bottle) still use the deterministic count.
     """
     q = question.lower()
 
-    # 关键词命中：问题文本中出现这些词则视为 noisy
+    # Keyword hit: any of these words in the question text marks it as noisy
     _NOISY_WORDS = {
         "paper", "papers", "sheet", "sheets", "page", "pages",
         "poster", "posters", "picture", "pictures", "photo", "photos",
@@ -682,7 +689,7 @@ def _is_noisy_count_target(question: str, ctx: Any) -> bool:
     if any(w in q for w in _NOISY_WORDS):
         return True
 
-    # 匹配到的节点标签中含 picture / frame → 高分裂风险
+    # Matched node labels containing picture / frame → high over-splitting risk
     matched_labels = [str(x).lower() for x in getattr(ctx, "total_matched_labels", [])]
     if any("picture" in x or "frame" in x for x in matched_labels):
         return True

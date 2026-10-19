@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-echo "=== 1. 设置环境 ==="
+echo "=== 1. Set up environment ==="
 cd /data/ywang/my_projects/VideoUnderstanding/Directme
 source /home/ywang/anaconda3/etc/profile.d/conda.sh
 conda activate cambrian
 
-# 请在此处修改为您通过 nvidia-smi 查到的空闲显卡编号
+# Change this to the index of an idle GPU found via nvidia-smi
 export CUDA_VISIBLE_DEVICES=3
 
-echo "=== 2. 运行 DirectMe Pipeline (建图 & 感知) ==="
+echo "=== 2. Run DirectMe pipeline (mapping & perception) ==="
 PYTHONPATH=. python -m directme.demo \
   --mode rule \
   --backend scal3r \
@@ -29,16 +29,16 @@ PYTHONPATH=. python -m directme.demo \
   --yolo-weights ckpts/yolo/yolov8m-worldv2.pt \
   --output-json /tmp/demo_test_results1.json
 
-# 记录目标 FPS 值到 Web UI 所在的临时目录中
+# Record the target FPS into the temp dir used by the Web UI
 echo '{"fps": 1.0}' > /data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline1/fps_record.json
 
-echo "=== 3. 导出密集点云 (Dense Pointcloud) ==="
+echo "=== 3. Export dense pointcloud ==="
 PYTHONPATH=. python directme/demo/export_dense_map.py \
   --data-root /data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline1 \
   --graph-json /data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline1/directme_mapping_run/scene_graph.json \
   --output /data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline1/dense_pointcloud_world.ply
 
-echo "=== 4. 任务完成 ==="
-echo "所有数据已生成在 /data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline1/"
-echo "您现在可以启动 Web 服务查看结果："
+echo "=== 4. Done ==="
+echo "All data has been generated in /data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline1/"
+echo "You can now start the web server to view the results:"
 echo "python -m directme.demo.web_server --port 8765"

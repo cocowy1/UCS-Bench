@@ -6,7 +6,7 @@ The on-disk format is a JSON or JSONL list of records like::
       "video_uid": "demo",
       "query_timestamp": 0.0,
       "dimension": "category_quantity",
-      "question": "我身边有几个红杯子？",
+      "question": "How many red cups are there around me?",
       "expected_count": 2,
       "expected_labels": ["cup"]
     }

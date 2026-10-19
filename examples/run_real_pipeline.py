@@ -23,8 +23,8 @@ Usage
          --frames ./frames \\
          --classes "cup,phone,bottle,laptop,chair,table,sink,fridge,door,bag" \\
          --out runs/my_session \\
-         --question "我身边有几个杯子？在哪？" \\
-         --language zh
+         --question "How many cups are around me? And where are they?" \\
+         --language en
 
 For a smoke test with no GPU, pass ``--toy``::
 
@@ -168,8 +168,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", default="runs/real", help="output directory")
     p.add_argument("--config", default=None, help="optional YAML config to override defaults")
 
-    p.add_argument("--question", default="我身边有几个杯子？在哪？")
-    p.add_argument("--language", default="zh", choices=["zh", "en"])
+    p.add_argument("--question", default="How many cups are around me? And where are they?")
+    p.add_argument("--language", default="en", choices=["zh", "en"])
     p.add_argument("--reachable-radius-m", type=float, default=5.0)
 
     p.add_argument("--classes", default="cup,phone,bottle,chair,table,laptop,sink,door,bag,book")

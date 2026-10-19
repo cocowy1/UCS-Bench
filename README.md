@@ -266,7 +266,7 @@ python examples/run_real_pipeline.py \
   --frames frames/demo \
   --out runs/demo \
   --classes "cup,phone,bottle,laptop,chair,table,sink,fridge,door,bag,book" \
-  --question "我身边有什么物体？它们在哪里？" \
+  --question "What objects are around me? Where are they?" \
   --language zh \
   --device cuda \
   --yolo-weights ckpts/yolo/yolov8s-worldv2.pt \

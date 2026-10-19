@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"  # 强制使用 GPU 0，避免默认 auto 选错 GPU
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"  # Force a specific GPU to avoid the default "auto" picking the wrong one
 import sys
 import re
 from tqdm.auto import tqdm
@@ -23,7 +23,7 @@ from directme.perception.test_perception_stack import (
 )
 
 
-# ===================== 数据结构 =====================
+# ===================== Data structures =====================
 @dataclass
 class QAItem:
     video_uid: str
@@ -185,7 +185,7 @@ def collect_keyframe_paths(ctx) -> list[str]:
             if p and os.path.exists(p):
                 paths.append(p)
 
-    # 去重，保持顺序
+    # Deduplicate while preserving order
     seen = set()
     out = []
     for p in paths:
@@ -296,36 +296,36 @@ def build_directme_prior_text(spatial_items: list[dict], max_items: int = 12) ->
     return "\n".join(lines)
 
 # ---------------------------------------------------------------------------
-# QA JSON 加载（UCS-Bench 格式）
+# QA JSON loading (UCS-Bench format)
 # ---------------------------------------------------------------------------
 def _load_json(path: str | Path) -> Any:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 def load_qa(qa_json: str | Path) -> list[dict[str, Any]]:
-    """加载 UCS-Bench 格式 QA 文件，返回原始条目列表。
+    """Load a UCS-Bench format QA file and return the raw list of entries.
 
-    必选字段：question, question_timestamps, options, answer_label
-    可选字段：question_chinese, answer, answer_chinese, evidence, ...
+    Required fields: question, question_timestamps, options, answer_label
+    Optional fields: question_chinese, answer, answer_chinese, evidence, ...
     """
     items = _load_json(qa_json)
     if not isinstance(items, list):
-        raise ValueError(f"{qa_json} 应为 list，实际为 {type(items)}")
-    print(f"[qa]    加载 {qa_json}  共 {len(items)} 条 QA")
+        raise ValueError(f"{qa_json} should be a list, got {type(items)}")
+    print(f"[qa]    loaded {qa_json}  {len(items)} QA items")
     return items
 
 # ---------------------------------------------------------------------------
-# 场景图加载
+# Scene graph loading
 # ---------------------------------------------------------------------------
 
 def load_graph(graph_json: str | None, pipeline_summary: str | None):
-    """从 JSON 文件加载 SceneGraph。优先使用 graph_json，其次从 summary 定位。"""
+    """Load a SceneGraph from a JSON file. Prefer graph_json; otherwise locate it via the summary."""
     from directme.mapping.scene_graph import SceneGraph
 
     def _from_path(p: Path):
         if not p.exists():
             raise FileNotFoundError(p)
         graph = SceneGraph.load_json(p)
-        print(f"[graph] 加载 {p}  节点={len(graph.nodes)}  边={len(graph.edges)}")
+        print(f"[graph] loaded {p}  nodes={len(graph.nodes)}  edges={len(graph.edges)}")
         return graph
 
     if graph_json:
@@ -346,17 +346,17 @@ def load_graph(graph_json: str | None, pipeline_summary: str | None):
         Path("scene_graph.json"),
     ):
         if p.exists():
-            print(f"[graph] 使用默认路径 {p}")
+            print(f"[graph] using default path {p}")
             return _from_path(p)
 
     raise FileNotFoundError(
-        "未找到场景图 JSON，请通过 --graph-json 或 --pipeline-summary 指定。"
+        "Scene graph JSON not found; specify it via --graph-json or --pipeline-summary."
     )
 
 
 
 # ---------------------------------------------------------------------------
-# 核心查询函数
+# Core query function
 # ---------------------------------------------------------------------------
 
 def run_query(
@@ -367,19 +367,20 @@ def run_query(
     top_k: int = 32,
     reachable_radius_m: float = 10.0,
 ) -> dict[str, Any]:
-    """对单条 UCS-Bench QA 条目执行完整的检索–渲染–生成流程。
+    """Run the full retrieve-render-generate flow for a single UCS-Bench QA entry.
 
-    流程
+    Flow
     ----
-    1. 解析 question_timestamps → 秒数
-    2. 从 ego_pose_timeline 插值最近 ego 位姿
-    3. GraphRetriever 检索 top-k 节点，render_egocentric 计算 8 向方位
-    4. 生成答案：
-       - 有选项 → dm.answer_mc()
-         * rule 模式：RuleBasedAnswerGenerator + Jaccard 降级
-         * qwen/internvl：MC 提示 + keyframe PIL 图像 → 本地 VLM → 字母标签
-       - 无选项 → dm.answer()（自由文本）
-    5. 返回含预测标签和正误标志的结果字典
+    1. Parse question_timestamps → seconds
+    2. Interpolate the nearest ego pose from the ego_pose_timeline
+    3. GraphRetriever fetches top-k nodes; render_egocentric computes the
+       8-way egocentric bearing
+    4. Generate the answer:
+       - With options → dm.answer_mc()
+         * rule mode: RuleBasedAnswerGenerator + Jaccard fallback
+         * qwen/internvl: MC prompt + keyframe PIL images → local VLM → letter label
+       - Without options → dm.answer() (free text)
+    5. Return a result dict with the predicted label and a correctness flag
     """
     from directme.retrieval.pose_lookup import pose_from_graph_timeline
     from directme.retrieval.query_parser import parse_query
@@ -388,7 +389,7 @@ def run_query(
     dm.config.retrieval.top_k = top_k
     dm.config.retrieval.reachable_radius_m = reachable_radius_m
 
-    # ── 语言 & 问题文本 ───────────────────────────────────────────────────────
+    # ── Language & question text ──────────────────────────────────────────────
     lang = language or ("zh" if re.search(r"[\u4e00-\u9fff]", item.get("question", "")) else "en")
     if lang == "zh" and item.get("question_chinese"):
         question = item["question_chinese"]
@@ -397,23 +398,23 @@ def run_query(
         question = item["question"]
         ref_answer = item.get("answer", "")
 
-    # ── 时间戳 → ego 位姿 ─────────────────────────────────────────────────────
+    # ── Timestamp → ego pose ───────────────────────────────────────────────────
     ts_s = _ts_sec(item["question_timestamps"])
     current_pose = pose_from_graph_timeline(dm.graph, timestamp=ts_s)
 
-    # ── 场景图检索（用于 spatial_items 展示字段）──────────────────────────────
+    # ── Scene graph retrieval (feeds the spatial_items display fields) ────────
     intent = parse_query(question, language=lang)
     retriever = GraphRetriever(dm.graph, reachable_radius_m=reachable_radius_m)
     ctx = retriever.retrieve(
         question, current_pose,
         top_k=top_k,
         language=lang,
-        as_of_timestamp=ts_s,                # ← 关键修改：只用 ts_s 之前的观测
+        as_of_timestamp=ts_s,                # ← key change: use only observations before ts_s
     )
-    # ── 自我中心空间关系整理 ──────────────────────────────────────────────────
-    # render_egocentric 已由 GraphRetriever 内部调用。
+    # ── Egocentric spatial relation assembly ──────────────────────────────────
+    # render_egocentric is already called internally by GraphRetriever.
     # relation   = classify_egocentric_relation(T_cam_from_world @ p_world)
-    # distance_m = ||p_cam||₂（刚性变换保持欧氏距离）
+    # distance_m = ||p_cam||₂ (rigid transforms preserve Euclidean distance)
     # reachable  = distance_m ≤ reachable_radius_m
     spatial_items = [
         {
@@ -430,7 +431,7 @@ def run_query(
         for it in ctx.items
     ]
 
-    # ── 答案生成 ──────────────────────────────────────────────────────────────
+    # ── Answer generation ─────────────────────────────────────────────────────
     options: dict[str, str] = item.get("options", {})
     predicted_label: str | None = None
     raw_answer: str = ""
@@ -521,7 +522,7 @@ def run_query(
 
 
 # ---------------------------------------------------------------------------
-# 工具函数
+# Utility functions
 # ---------------------------------------------------------------------------
 def _ts_sec(ts) -> float:
     if isinstance(ts, (int, float)):
@@ -549,14 +550,14 @@ def _options_labels(options: dict[str, str]) -> str:
 
 def _print_result(result: dict, verbose: bool = False) -> None:
     print(f"\n{'─'*60}")
-    print(f"问题 [{result['language']}]：{result['question']}")
-    print(f"时间戳：{result['timestamp_s']:.1f}s  |  "
-        f"候选图节点 {result['matched_count']} 个，"
-        f"其中 {result['reachable_count']} 个可达")
+    print(f"Question [{result['language']}]: {result['question']}")
+    print(f"Timestamp: {result['timestamp_s']:.1f}s  |  "
+        f"{result['matched_count']} candidate graph nodes, "
+        f"of which {result['reachable_count']} are reachable")
 
 
     if result["spatial_items"]:
-        print("空间关系：")
+        print("Spatial relations:")
         for it in result["spatial_items"]:
             color = (f"[{it['color']}] "
                      if it.get("color") and it["color"] not in ("unknown", None, "")
@@ -565,12 +566,12 @@ def _print_result(result: dict, verbose: bool = False) -> None:
             print(f"  {it['node_id']:12s}  {color}{it['label']:16s}  "
                   f"{it['natural_language']}  {reach}")
 
-    print(f"答案：{result['raw_answer'][:200]}")
+    print(f"Answer: {result['raw_answer'][:200]}")
     if verbose and result.get("reference_answer"):
-        print(f"参考：{result['reference_answer']}")
+        print(f"Reference: {result['reference_answer']}")
 
 # ---------------------------------------------------------------------------
-# 批量评测
+# Batch evaluation
 # ---------------------------------------------------------------------------
 
 def run_batch(
@@ -599,9 +600,9 @@ def run_batch(
             results.append(result)
             _print_result(result, verbose=verbose)
             print(f"  [{i+1}/{n}] {qid}  "
-                  f"正确={result['is_correct']}  "
-                  f"预测={result['predicted_label']}  "
-                  f"标准={result['answer_label']}")
+                  f"correct={result['is_correct']}  "
+                  f"pred={result['predicted_label']}  "
+                  f"gt={result['answer_label']}")
         except Exception as exc:
             print(f"  [{i+1}/{n}] {qid}  ERROR: {exc}", file=sys.stderr)
             import traceback; traceback.print_exc()
@@ -609,14 +610,14 @@ def run_batch(
     judged = [r for r in results if r["is_correct"] is not None]
     if judged:
         acc = sum(r["is_correct"] for r in judged) / len(judged)
-        print(f"\n[统计] 共 {len(results)} 条  已评判 {len(judged)} 条  准确率 {acc:.1%}")
+        print(f"\n[stats] {len(results)} total  {len(judged)} judged  accuracy {acc:.1%}")
 
         cat_stats: dict[str, list[bool]] = defaultdict(list)
         for r in judged:
             if r.get("category"):
                 cat_stats[r["category"]].append(r["is_correct"])
         if cat_stats:
-            print("[统计] 分类准确率：")
+            print("[stats] accuracy by category:")
             for cat, bools in sorted(cat_stats.items()):
                 print(f"  {cat:45s}  {sum(bools)}/{len(bools)} = {sum(bools)/len(bools):.1%}")
 
@@ -634,11 +635,11 @@ def build_directme(
     max_image_size: int = 512,
     internvl_image_size: int = 448,
 ):
-    """构建 DirectMe 实例并注入已建好的 SceneGraph。
+    """Build a DirectMe instance and inject the prebuilt SceneGraph.
 
-    mode=rule     → RuleBasedAnswerGenerator（无 GPU，MC 用 Jaccard 降级）
-    mode=qwen     → QwenVLGenerator（Qwen3-VL 本地推理，MC + 关键帧图像）
-    mode=internvl → InternVLGenerator（InternVL3 本地推理，MC + 关键帧图像）
+    mode=rule     → RuleBasedAnswerGenerator (no GPU; MC falls back to Jaccard)
+    mode=qwen     → QwenVLGenerator (local Qwen3-VL inference; MC + keyframe images)
+    mode=internvl → InternVLGenerator (local InternVL3 inference; MC + keyframe images)
     """
     from directme.pipeline import DirectMe as _DirectMe
 
@@ -661,7 +662,7 @@ def build_directme(
             config=config,
         )
     else:
-        raise ValueError(f"未知 mode：{mode}，支持 rule / qwen / internvl")
+        raise ValueError(f"Unknown mode: {mode}; supported: rule / qwen / internvl")
 
     if graph is not None:
         dm.graph = graph
@@ -669,7 +670,7 @@ def build_directme(
 
 def strip_mcq_uid(video_uid: str) -> str:
     """
-    把 xxxx-mcq / xxxx__mcq / xxxx___--mcq 统一映射到 xxxx
+    Map xxxx-mcq / xxxx__mcq / xxxx___--mcq uniformly back to xxxx.
     """
     video_uid = (video_uid or "").strip()
     if not video_uid:
@@ -685,7 +686,7 @@ def strip_mcq_uid(video_uid: str) -> str:
         i -= 1
     return video_uid[: i + 1]
 
-# ===================== 数据加载辅助 =====================
+# ===================== Data loading helpers =====================
 def timestamp_to_seconds(ts: str) -> float:
     try:
         parts = ts.split(":")
@@ -702,10 +703,10 @@ def timestamp_to_seconds(ts: str) -> float:
 
 def load_qa_items_from_dir(qa_dir: str) -> Dict[str, List[QAItem]]:
     """
-    修改点：
-    - 从 item["video_uid"] 读到的 uid 可能是 xxxx-mcq
-    - 我们在这里统一 strip 成真实视频名字 xxxx
-    - video2qas 的 key 使用 strip 后的 uid，保证与 frames_dir 匹配
+    Change notes:
+    - The uid read from item["video_uid"] may be xxxx-mcq
+    - Strip it here uniformly down to the real video name xxxx
+    - video2qas is keyed by the stripped uid so it matches frames_dir
     """
     video2qas = {}
     uid2files = {} 
@@ -724,7 +725,7 @@ def load_qa_items_from_dir(qa_dir: str) -> Dict[str, List[QAItem]]:
 
         for item in data:
             raw_uid = str(item.get("video_uid", "")).strip()
-            uid = strip_mcq_uid(raw_uid)  # ✅ 核心修改
+            uid = strip_mcq_uid(raw_uid)  # ✅ key change
 
             if not uid:
                 continue
@@ -735,7 +736,7 @@ def load_qa_items_from_dir(qa_dir: str) -> Dict[str, List[QAItem]]:
                 ans_label = item["answer"]
 
             qa = QAItem(
-                video_uid=uid,  # ✅ 用 strip 后的 uid
+                video_uid=uid,  # ✅ use the stripped uid
                 qid=str(item["qid"]),
                 question=str(item["question"]),
                 options=item["options"],
@@ -746,13 +747,13 @@ def load_qa_items_from_dir(qa_dir: str) -> Dict[str, List[QAItem]]:
                 question_timestamp=timestamp_to_seconds(item.get("question_timestamps", "00:00:00")),
             )
 
-            # （可选）保留原始 uid 方便 debug：给 qa 动态挂一个字段
+            # (Optional) keep the original uid for debugging: attach it as a dynamic field on qa
             # qa.raw_video_uid = raw_uid
 
             uid2files.setdefault(uid, set()).add(base)  
             video2qas.setdefault(uid, []).append(qa)
 
-    # ✅ 打印哪些 uid 来自多个文件（就是被合并的根源）
+    # ✅ Print which uids come from multiple files (the root cause of the merging)
     merged = {u: sorted(list(fs)) for u, fs in uid2files.items() if len(fs) > 1}
     print(f"[INFO] Unique videos (uids): {len(uid2files)}")
     print(f"[INFO] UIDs merged from multiple JSON files: {len(merged)}")
@@ -844,7 +845,7 @@ def main():
     parser.add_argument("--output", default="/data/ywang/my_projects/VideoUnderstanding/Directme/ucsbench_output/results_qwen.json")
 
     parser.add_argument("--mode", choices=["qwen", "internvl"], default="qwen")
-    parser.add_argument("--model_path", default="/data/ywang/my_projects/VideoUnderstanding/Qwen3-VL-8B-Instruct", help="本地模型路径（mode=qwen 或 mode=internvl 时使用）")
+    parser.add_argument("--model_path", default="/data/ywang/my_projects/VideoUnderstanding/Qwen3-VL-8B-Instruct", help="local model path (used when mode=qwen or mode=internvl)")
     parser.add_argument("--device_map", default="cuda")
     parser.add_argument("--perception_chunk_size", type=int, default=300)
 

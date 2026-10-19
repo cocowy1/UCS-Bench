@@ -88,7 +88,7 @@ class GraphRetriever:
         reachable_radius_m: float = DEFAULT_REACHABLE_RADIUS_M,
         lateral_tolerance_ratio: float = DEFAULT_LATERAL_TOLERANCE_RATIO,
         count_all_matches: bool = True,
-        allow_unlabeled_fallback: bool = False,   # 改动 A：默认关闭全图 fallback
+        allow_unlabeled_fallback: bool = False,   # Change A: whole-graph fallback disabled by default
     ):
         self.graph = graph
         self.reachable_radius_m = reachable_radius_m
@@ -102,23 +102,26 @@ class GraphRetriever:
         current_pose: SE3,
         top_k: int = 8,
         language: str | None = None,
-        as_of_timestamp: float | None = None,     # 改动 A：在线 QA 时间戳过滤
+        as_of_timestamp: float | None = None,     # Change A: timestamp filtering for online QA
     ) -> RetrievedContext:
-        """检索场景图。
+        """Retrieve from the scene graph.
 
         Parameters
         ----------
         as_of_timestamp : float | None
-            若提供，则仅保留首次观测时间 <= as_of_timestamp 的节点，
-            确保不使用"未来"观测回答当前时刻的问题（UCS-Bench 在线 QA 语义）。
-            None 时退化为离线检索（使用全部节点）。
+            If provided, keep only nodes whose first observation timestamp is
+            <= as_of_timestamp, ensuring no "future" observations are used to
+            answer a question about the current moment (UCS-Bench online QA
+            semantics). None degrades to offline retrieval (all nodes).
         allow_unlabeled_fallback : bool
-            当 intent.labels 和 intent.colors 均为空时，是否回退到全体候选节点。
-            默认 False：空意图时返回空匹配，避免把全图 128 个节点当成"匹配"。
+            Whether to fall back to all candidate nodes when both
+            intent.labels and intent.colors are empty. Defaults to False: an
+            empty intent yields an empty match, instead of treating all 128
+            graph nodes as "matched".
         """
         intent = parse_query(question, language=language)
 
-        # ── 改动 A：按时间戳过滤候选节点池 ──────────────────────────────────
+        # ── Change A: filter the candidate node pool by timestamp ──
         if as_of_timestamp is not None:
             candidate_nodes = [
                 n for n in self.graph.nodes.values()
@@ -134,11 +137,11 @@ class GraphRetriever:
             if score > 0:
                 scored.append((score, node))
 
-        # ── 改动 A：关闭全图 fallback（原代码把全部节点都返回，导致 COUNT 题错误）──
+        # ── Change A: disable whole-graph fallback (the old code returned every node, breaking COUNT) ──
         if not scored and not intent.labels and not intent.colors:
             if self.allow_unlabeled_fallback:
                 scored = [(0.1, node) for node in candidate_nodes]
-            # else: 保持 scored=[]，ctx.count=0，QA 端可识别"未检索到目标"
+            # else: keep scored=[], ctx.count=0, so the QA side can detect "no target retrieved"
         # ─────────────────────────────────────────────────────────────────────
 
         scored_sorted = sorted(scored, key=lambda x: x[0], reverse=True)

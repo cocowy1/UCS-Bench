@@ -1,44 +1,45 @@
 #!/usr/bin/env python3
-"""DirectMe QA 检索与空间关系生成 Demo。
+"""DirectMe QA retrieval and spatial relation generation demo.
 
-将 UCS-Bench 格式的 QA JSON 与建图引擎输出的场景图对齐，
-在每条 QA 的 ``question_timestamps`` 时刻解析 ego 位姿，
-通过 GraphRetriever 检索场景图节点并渲染自我中心空间关系，
-最终调用答案生成器输出答案。
+Aligns UCS-Bench format QA JSON with the scene graph produced by the
+mapping engine, resolves the ego pose at each QA item's
+``question_timestamps``, retrieves scene graph nodes via GraphRetriever,
+renders egocentric spatial relations, and finally calls the answer
+generator to produce answers.
 
-自我中心方向计算的数学基础
----------------------------
-设场景图中某节点的世界坐标为 p_world，
-查询时刻的相机位姿为 T_world_from_camera（ego_pose_timeline 中存储），
-则：
+Mathematical basis of egocentric direction computation
+-------------------------------------------------------
+Let p_world be the world coordinate of a node in the scene graph, and
+T_world_from_camera the camera pose at query time (stored in
+ego_pose_timeline). Then:
 
     T_camera_from_world = T_world_from_camera^{-1}
     p_cam = T_camera_from_world · p_world
 
-相机坐标系约定（DirectMe）：x=右，y=下，z=前。
-方位分类：
+Camera coordinate convention (DirectMe): x=right, y=down, z=forward.
+Direction classification:
 
-    |x| ≤ α · max(|z|, 1)  →  纯前/后（α = lateral_tolerance_ratio = 0.20）
-    |z| ≤ δ（δ=0.30m）     →  纯左/右
-    其他                   →  front_left / behind_right 等 8 向组合
+    |x| ≤ α · max(|z|, 1)  →  pure front/behind (α = lateral_tolerance_ratio = 0.20)
+    |z| ≤ δ (δ=0.30m)      →  pure left/right
+    otherwise              →  8-way combos such as front_left / behind_right
 
-距离 = ||p_cam||₂（刚性变换不改变欧氏距离）
-可达性 = 距离 ≤ reachable_radius_m
+Distance = ||p_cam||₂ (rigid transforms preserve Euclidean distance)
+Reachability = distance ≤ reachable_radius_m
 
-用法
-----
-# 规则生成器（无需 GPU）
+Usage
+-----
+# Rule-based generator (no GPU required)
 python demo.py --graph-json scene_graph.json --qa-json qa.json --mode rule
 
-# Qwen3-VL 本地推理（UCS-Bench 多选评测）
+# Qwen3-VL local inference (UCS-Bench multiple-choice evaluation)
 python demo.py --graph-json scene_graph.json --qa-json qa.json \\
     --mode qwen --model-path /path/to/Qwen3-VL-8B-Instruct
 
-# InternVL3 本地推理
+# InternVL3 local inference
 python demo.py --graph-json scene_graph.json --qa-json qa.json \\
     --mode internvl --model-path /path/to/InternVL3-8B
 
-# 交互式
+# Interactive
 python demo.py --graph-json scene_graph.json --mode rule --interactive
 """
 
@@ -53,11 +54,11 @@ from typing import Any
 
 
 # ---------------------------------------------------------------------------
-# 工具函数
+# Utility functions
 # ---------------------------------------------------------------------------
 
 def _ts_sec(ts: str) -> float:
-    """将 'HH:MM:SS' 或 'MM:SS' 格式时间戳转换为秒数。"""
+    """Convert an 'HH:MM:SS' or 'MM:SS' timestamp to seconds."""
     parts = [float(p) for p in ts.strip().split(":")]
     if len(parts) == 3:
         return parts[0] * 3600 + parts[1] * 60 + parts[2]
@@ -79,18 +80,18 @@ def _options_labels(options: dict[str, str]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# 场景图加载
+# Scene graph loading
 # ---------------------------------------------------------------------------
 
 def load_graph(graph_json: str | None, pipeline_summary: str | None):
-    """从 JSON 文件加载 SceneGraph。优先使用 graph_json，其次从 summary 定位。"""
+    """Load a SceneGraph from a JSON file. Prefer graph_json, otherwise locate it from the summary."""
     from directme.mapping.scene_graph import SceneGraph
 
     def _from_path(p: Path):
         if not p.exists():
             raise FileNotFoundError(p)
         graph = SceneGraph.load_json(p)
-        print(f"[graph] 加载 {p}  节点={len(graph.nodes)}  边={len(graph.edges)}")
+        print(f"[graph] loaded {p}  nodes={len(graph.nodes)}  edges={len(graph.edges)}")
         return graph
 
     if graph_json:
@@ -111,33 +112,33 @@ def load_graph(graph_json: str | None, pipeline_summary: str | None):
         Path("scene_graph.json"),
     ):
         if p.exists():
-            print(f"[graph] 使用默认路径 {p}")
+            print(f"[graph] using default path {p}")
             return _from_path(p)
 
     raise FileNotFoundError(
-        "未找到场景图 JSON，请通过 --graph-json 或 --pipeline-summary 指定。"
+        "Scene graph JSON not found. Please specify it via --graph-json or --pipeline-summary."
     )
 
 
 # ---------------------------------------------------------------------------
-# QA JSON 加载（UCS-Bench 格式）
+# QA JSON loading (UCS-Bench format)
 # ---------------------------------------------------------------------------
 
 def load_qa(qa_json: str | Path) -> list[dict[str, Any]]:
-    """加载 UCS-Bench 格式 QA 文件，返回原始条目列表。
+    """Load a UCS-Bench format QA file and return the raw entry list.
 
-    必选字段：question, question_timestamps, options, answer_label
-    可选字段：question_chinese, answer, answer_chinese, evidence, ...
+    Required fields: question, question_timestamps, options, answer_label
+    Optional fields: question_chinese, answer, answer_chinese, evidence, ...
     """
     items = _load_json(qa_json)
     if not isinstance(items, list):
-        raise ValueError(f"{qa_json} 应为 list，实际为 {type(items)}")
-    print(f"[qa]    加载 {qa_json}  共 {len(items)} 条 QA")
+        raise ValueError(f"{qa_json} should be a list, got {type(items)}")
+    print(f"[qa]    loaded {qa_json}  {len(items)} QA items")
     return items
 
 
 # ---------------------------------------------------------------------------
-# DirectMe 实例构建
+# DirectMe instance construction
 # ---------------------------------------------------------------------------
 
 def build_directme(
@@ -150,11 +151,11 @@ def build_directme(
     max_image_size: int = 512,
     internvl_image_size: int = 448,
 ):
-    """构建 DirectMe 实例并注入已建好的 SceneGraph。
+    """Build a DirectMe instance and inject the pre-built SceneGraph.
 
-    mode=rule     → RuleBasedAnswerGenerator（无 GPU，MC 用 Jaccard 降级）
-    mode=qwen     → QwenVLGenerator（Qwen3-VL 本地推理，MC + 关键帧图像）
-    mode=internvl → InternVLGenerator（InternVL3 本地推理，MC + 关键帧图像）
+    mode=rule     → RuleBasedAnswerGenerator (no GPU; MC falls back to Jaccard)
+    mode=qwen     → QwenVLGenerator (Qwen3-VL local inference, MC + keyframe images)
+    mode=internvl → InternVLGenerator (InternVL3 local inference, MC + keyframe images)
     """
     from directme.pipeline import DirectMe as _DirectMe
 
@@ -177,7 +178,7 @@ def build_directme(
             config=config,
         )
     else:
-        raise ValueError(f"未知 mode：{mode}，支持 rule / qwen / internvl")
+        raise ValueError(f"Unknown mode: {mode}; supported: rule / qwen / internvl")
 
     if graph is not None:
         dm.graph = graph
@@ -185,7 +186,7 @@ def build_directme(
 
 
 # ---------------------------------------------------------------------------
-# 从 perception 开始建图（视频/帧目录 → 场景图）
+# Build the graph from perception (video/frames dir → scene graph)
 # ---------------------------------------------------------------------------
 
 _IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
@@ -202,7 +203,7 @@ def list_image_paths(frames_dir: str | Path) -> list[Path]:
         raise FileNotFoundError(frames_dir)
     paths = [p for p in frames_dir.iterdir() if p.is_file() and p.suffix.lower() in _IMAGE_SUFFIXES]
     if not paths:
-        raise ValueError(f"未在 {frames_dir} 下找到图像帧")
+        raise ValueError(f"No image frames found under {frames_dir}")
     return sorted(paths, key=_natural_sort_key)
 
 
@@ -228,7 +229,7 @@ def _load_classes_from_yaml(path: str | Path, class_limit: int | None = None) ->
     try:
         import yaml
     except ImportError as exc:
-        raise ImportError("读取 --classes-file 需要 PyYAML：pip install pyyaml") from exc
+        raise ImportError("Reading --classes-file requires PyYAML: pip install pyyaml") from exc
 
     path = Path(path).resolve()
     if not path.exists():
@@ -285,12 +286,12 @@ def _load_classes_from_json(path: str | Path, class_limit: int | None = None) ->
             else:
                 _extract(value)
 
-        # 兼容 {"1": "person", "2": "cup"} 这类简单 id→name 字典。
+        # Also supports simple id→name dicts such as {"1": "person", "2": "cup"}.
         if not names:
             for value in data.values():
                 _extract(value)
     else:
-        raise ValueError(f"--classes-json 格式不支持：{type(data)}")
+        raise ValueError(f"Unsupported --classes-json format: {type(data)}")
 
     names = [c for c in names if str(c).strip()]
     if class_limit and class_limit > 0:
@@ -304,13 +305,13 @@ def load_open_vocab_classes(
     classes_file: str | None,
     class_limit: int | None,
 ) -> list[str]:
-    """加载 YOLO-World 开放词表类别。
+    """Load YOLO-World open-vocabulary classes.
 
-    优先级/来源：
-    1. --classes-file：YAML，推荐直接传 Object.yaml / Objects365 names；
-    2. --classes-json：Objects365/COCO categories JSON；
-    3. --classes：逗号分隔额外类别；
-    4. 都不传时，仅使用小规模 smoke-test fallback。
+    Priority/sources:
+    1. --classes-file: YAML; passing Object.yaml / Objects365 names directly is recommended;
+    2. --classes-json: Objects365/COCO categories JSON;
+    3. --classes: comma-separated extra classes;
+    4. If none is given, fall back to a small smoke-test class list.
     """
     names: list[str] = []
 
@@ -329,7 +330,7 @@ def load_open_vocab_classes(
             "backpack", "sink", "refrigerator", "door", "sofa", "bed", "laptop",
             "keyboard", "mouse",
         ]
-        print("[WARN] 未指定 --classes-file / --classes-json / --classes，使用小规模 fallback 类别，仅适合 smoke test。")
+        print("[WARN] No --classes-file / --classes-json / --classes specified; using a small fallback class list, only suitable for smoke tests.")
 
     return _dedupe_keep_order(names)
 
@@ -355,8 +356,8 @@ def _resolve_scal3r_result_dir(path: str | Path | None) -> Path | None:
         return mats[0].parent
 
     if len(mats) > 1:
-        # 多 chunk 预计算目录允许形如 root/chunk_000000/mat.txt；
-        # 直接返回 root，由 Scal3RDepthPoseAdapter 按 chunk_id 查找。
+        # A precomputed multi-chunk directory may look like root/chunk_000000/mat.txt;
+        # return root directly and let Scal3RDepthPoseAdapter look it up by chunk_id.
         if all(m.parent.name.startswith("chunk_") for m in mats):
             return root
         msg = "\n".join(str(p) for p in mats[:20])
@@ -370,10 +371,10 @@ def _resolve_scal3r_result_dir(path: str | Path | None) -> Path | None:
 
 
 def build_perception_backend(args):
-    """构建 perception backend。
+    """Build the perception backend.
 
-    重要：默认 backend=scal3r，构造方式与 full SCAL3R + YOLO-World + SAM2
-    pipeline test 保持一致：
+    Important: the default backend=scal3r is constructed the same way as in
+    the full SCAL3R + YOLO-World + SAM2 pipeline test:
       Scal3RDepthPoseAdapter + Scal3RRunner
       + YoloWorldDetector
       + optional Sam2MaskRefiner
@@ -383,7 +384,7 @@ def build_perception_backend(args):
     """
     if args.backend == "toy":
         from directme.perception.toy import ToyPerceptionBackend
-        print("[perception] 使用 ToyPerceptionBackend（仅用于 smoke test，不读取真实视觉内容）")
+        print("[perception] using ToyPerceptionBackend (smoke tests only; does not read real visual content)")
         return ToyPerceptionBackend(script={})
 
     classes = load_open_vocab_classes(
@@ -393,11 +394,11 @@ def build_perception_backend(args):
         args.class_limit,
     )
     if not classes:
-        raise ValueError("--backend 需要通过 --classes-file / --classes-json / --classes 指定至少一个开放词表类别")
+        raise ValueError("--backend requires at least one open-vocabulary class via --classes-file / --classes-json / --classes")
 
     if args.backend in ("da3", "composed"):
-        # Backward compatible DA3 path. 保留是为了兼容上一版 demo；
-        # 正式与 full_pipeline_test 对齐时请使用默认的 --backend scal3r。
+        # Backward compatible DA3 path, kept for compatibility with the previous demo;
+        # use the default --backend scal3r to stay aligned with full_pipeline_test.
         from directme.perception.runtime import build_composed_backend, resolve_runtime_device
 
         resolved = resolve_runtime_device(args.device)
@@ -406,7 +407,7 @@ def build_perception_backend(args):
         if args.sam2_checkpoint and args.sam2_config:
             print(f"[perception] SAM2 enabled: {args.sam2_checkpoint}")
         else:
-            print("[perception] SAM2 disabled；tracking 图仍保存 bbox + track_id，几何用 bbox-center depth fallback")
+            print("[perception] SAM2 disabled; tracking images still save bbox + track_id, geometry uses the bbox-center depth fallback")
 
         return build_composed_backend(
             classes=classes,
@@ -423,7 +424,7 @@ def build_perception_backend(args):
         )
 
     if args.backend != "scal3r":
-        raise ValueError(f"未知 perception backend: {args.backend}")
+        raise ValueError(f"Unknown perception backend: {args.backend}")
 
     from directme.perception.adapters.open_vocab_tracking import (
         OpenVocabularyTrackingAdapter,
@@ -479,7 +480,7 @@ def build_perception_backend(args):
             device=args.device,
         )
     else:
-        print("[perception] SAM2 disabled；tracking 图仍保存 bbox + track_id，几何用 bbox fallback")
+        print("[perception] SAM2 disabled; tracking images still save bbox + track_id, geometry uses the bbox fallback")
 
     tracker = OpenVocabularyTrackingAdapter(
         detector=detector,
@@ -495,11 +496,11 @@ def build_perception_backend(args):
     )
 
 def build_graph_from_perception(dm, args):
-    """从视频或帧目录开始运行 perception + offline incremental mapping。"""
+    """Run perception + offline incremental mapping starting from a video or frames directory."""
     if args.video and args.frames_dir:
-        raise ValueError("--video 与 --frames-dir 只能指定一个")
+        raise ValueError("Only one of --video and --frames-dir may be specified")
     if not args.video and not args.frames_dir:
-        raise ValueError("从 perception 建图需要 --video 或 --frames-dir")
+        raise ValueError("Building the graph from perception requires --video or --frames-dir")
 
     backend = build_perception_backend(args)
     run_dir = Path(args.run_dir)
@@ -541,7 +542,7 @@ def build_graph_from_perception(dm, args):
 
 
 # ---------------------------------------------------------------------------
-# 核心查询函数
+# Core query function
 # ---------------------------------------------------------------------------
 
 def run_query(
@@ -552,19 +553,19 @@ def run_query(
     top_k: int = 16,
     reachable_radius_m: float = 10.0,
 ) -> dict[str, Any]:
-    """对单条 UCS-Bench QA 条目执行完整的检索–渲染–生成流程。
+    """Run the full retrieve-render-generate pipeline for one UCS-Bench QA item.
 
-    流程
-    ----
-    1. 解析 question_timestamps → 秒数
-    2. 从 ego_pose_timeline 插值最近 ego 位姿
-    3. GraphRetriever 检索 top-k 节点，render_egocentric 计算 8 向方位
-    4. 生成答案：
-       - 有选项 → dm.answer_mc()
-         * rule 模式：RuleBasedAnswerGenerator + Jaccard 降级
-         * qwen/internvl：MC 提示 + keyframe PIL 图像 → 本地 VLM → 字母标签
-       - 无选项 → dm.answer()（自由文本）
-    5. 返回含预测标签和正误标志的结果字典
+    Pipeline
+    --------
+    1. Parse question_timestamps → seconds
+    2. Interpolate the nearest ego pose from ego_pose_timeline
+    3. GraphRetriever fetches the top-k nodes; render_egocentric computes the 8-way direction
+    4. Generate the answer:
+       - with options → dm.answer_mc()
+         * rule mode: RuleBasedAnswerGenerator + Jaccard fallback
+         * qwen/internvl: MC prompt + keyframe PIL images → local VLM → letter label
+       - without options → dm.answer() (free-form text)
+    5. Return a result dict with the predicted label and a correctness flag
     """
     from directme.retrieval.pose_lookup import pose_from_graph_timeline
     from directme.retrieval.query_parser import parse_query
@@ -573,7 +574,7 @@ def run_query(
     dm.config.retrieval.top_k = top_k
     dm.config.retrieval.reachable_radius_m = reachable_radius_m
 
-    # ── 语言 & 问题文本 ───────────────────────────────────────────────────────
+    # ── Language & question text ──────────────────────────────────────────────
     lang = language or ("zh" if re.search(r"[\u4e00-\u9fff]", item.get("question", "")) else "en")
     if lang == "zh" and item.get("question_chinese"):
         question = item["question_chinese"]
@@ -582,23 +583,23 @@ def run_query(
         question = item["question"]
         ref_answer = item.get("answer", "")
 
-    # ── 时间戳 → ego 位姿 ─────────────────────────────────────────────────────
+    # ── Timestamp → ego pose ──────────────────────────────────────────────────
     ts_s = _ts_sec(item["question_timestamps"])
     current_pose = pose_from_graph_timeline(dm.graph, timestamp=ts_s)
 
-    # ── 场景图检索（用于 spatial_items 展示字段）──────────────────────────────
+    # ── Scene graph retrieval (populates the spatial_items display fields) ─────────
     intent = parse_query(question, language=lang)
     retriever = GraphRetriever(dm.graph, reachable_radius_m=reachable_radius_m)
     ctx = retriever.retrieve(
         question, current_pose,
         top_k=top_k,
         language=lang,
-        as_of_timestamp=ts_s,                # ← 关键修改：只用 ts_s 之前的观测
+        as_of_timestamp=ts_s,                # ← key change: only observations recorded before ts_s are used
     )
-    # ── 自我中心空间关系整理 ──────────────────────────────────────────────────
-    # render_egocentric 已由 GraphRetriever 内部调用。
+    # ── Egocentric spatial relation assembly ──────────────────────────────────
+    # render_egocentric is already invoked inside GraphRetriever.
     # relation   = classify_egocentric_relation(T_cam_from_world @ p_world)
-    # distance_m = ||p_cam||₂（刚性变换保持欧氏距离）
+    # distance_m = ||p_cam||₂ (rigid transforms preserve Euclidean distance)
     # reachable  = distance_m ≤ reachable_radius_m
     spatial_items = [
         {
@@ -615,13 +616,13 @@ def run_query(
         for it in ctx.items
     ]
 
-    # ── 答案生成 ──────────────────────────────────────────────────────────────
+    # ── Answer generation ─────────────────────────────────────────────────────
     options: dict[str, str] = item.get("options", {})
     predicted_label: str | None = None
     raw_answer: str = ""
 
     if options:
-        # 有选项 → answer_mc()：正确路径为 MC 提示 + keyframe 图像 → VLM
+        # with options → answer_mc(): the intended path is MC prompt + keyframe images → VLM
         labels_str = _options_labels(options)
         raw_answer, predicted_label = dm.answer_mc(
             question=question,
@@ -629,8 +630,8 @@ def run_query(
             current_pose=current_pose,
             language=lang,
             option_labels=labels_str,
-            qtype=item.get("qtype"),             # ← COUNT 题走确定性计数
-            as_of_timestamp=ts_s,                # ← 与上面 retrieve 保持一致
+            qtype=item.get("qtype"),             # ← COUNT questions use deterministic counting
+            as_of_timestamp=ts_s,                # ← consistent with retrieve above
         )
     else:
         raw_answer = dm.answer(
@@ -676,7 +677,7 @@ def run_query(
 
 
 # ---------------------------------------------------------------------------
-# 批量评测
+# Batch evaluation
 # ---------------------------------------------------------------------------
 
 def run_batch(
@@ -705,9 +706,9 @@ def run_batch(
             results.append(result)
             _print_result(result, verbose=verbose)
             print(f"  [{i+1}/{n}] {qid}  "
-                  f"正确={result['is_correct']}  "
-                  f"预测={result['predicted_label']}  "
-                  f"标准={result['answer_label']}")
+                  f"correct={result['is_correct']}  "
+                  f"predicted={result['predicted_label']}  "
+                  f"ground_truth={result['answer_label']}")
         except Exception as exc:
             print(f"  [{i+1}/{n}] {qid}  ERROR: {exc}", file=sys.stderr)
             import traceback; traceback.print_exc()
@@ -715,14 +716,14 @@ def run_batch(
     judged = [r for r in results if r["is_correct"] is not None]
     if judged:
         acc = sum(r["is_correct"] for r in judged) / len(judged)
-        print(f"\n[统计] 共 {len(results)} 条  已评判 {len(judged)} 条  准确率 {acc:.1%}")
+        print(f"\n[stats] {len(results)} total  {len(judged)} judged  accuracy {acc:.1%}")
 
         cat_stats: dict[str, list[bool]] = defaultdict(list)
         for r in judged:
             if r.get("category"):
                 cat_stats[r["category"]].append(r["is_correct"])
         if cat_stats:
-            print("[统计] 分类准确率：")
+            print("[stats] accuracy by category:")
             for cat, bools in sorted(cat_stats.items()):
                 print(f"  {cat:45s}  {sum(bools)}/{len(bools)} = {sum(bools)/len(bools):.1%}")
 
@@ -731,14 +732,14 @@ def run_batch(
 
 def _print_result(result: dict, verbose: bool = False) -> None:
     print(f"\n{'─'*60}")
-    print(f"问题 [{result['language']}]：{result['question']}")
-    print(f"时间戳：{result['timestamp_s']:.1f}s  |  "
-        f"候选图节点 {result['matched_count']} 个，"
-        f"其中 {result['reachable_count']} 个可达")
+    print(f"Question [{result['language']}]: {result['question']}")
+    print(f"Timestamp: {result['timestamp_s']:.1f}s  |  "
+        f"{result['matched_count']} candidate graph nodes, "
+        f"{result['reachable_count']} of them reachable")
 
 
     if result["spatial_items"]:
-        print("空间关系：")
+        print("Spatial relations:")
         for it in result["spatial_items"]:
             color = (f"[{it['color']}] "
                      if it.get("color") and it["color"] not in ("unknown", None, "")
@@ -747,20 +748,20 @@ def _print_result(result: dict, verbose: bool = False) -> None:
             print(f"  {it['node_id']:12s}  {color}{it['label']:16s}  "
                   f"{it['natural_language']}  {reach}")
 
-    print(f"答案：{result['raw_answer'][:200]}")
+    print(f"Answer: {result['raw_answer'][:200]}")
     if verbose and result.get("reference_answer"):
-        print(f"参考：{result['reference_answer']}")
+        print(f"Reference: {result['reference_answer']}")
 
 
 # ---------------------------------------------------------------------------
-# 交互式 REPL
+# Interactive REPL
 # ---------------------------------------------------------------------------
 
 def run_interactive(dm, *, top_k: int, reachable_radius_m: float) -> None:
-    print("\n交互式模式（输入 quit 退出）。位姿固定为 timeline 末尾帧。")
+    print("\nInteractive mode (type quit to exit). The pose is fixed to the last frame of the timeline.")
     while True:
         try:
-            question = input("\n> 问题：").strip()
+            question = input("\n> Question: ").strip()
         except (KeyboardInterrupt, EOFError):
             break
         if not question or question.lower() in ("quit", "exit", "q"):
@@ -786,82 +787,82 @@ def main() -> int:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    src = p.add_argument_group("输入：已有场景图或从 perception 重新建图")
+    src = p.add_argument_group("Input: existing scene graph, or rebuild it from perception")
     src.add_argument(
         "--input-mode",
         choices=["auto", "from_graph", "from_perception"],
         default="auto",
         help=(
-            "输入模式："
-            "from_graph=基于已有 scene_graph.json 推理；"
-            "from_perception=从视频/帧目录开始运行 perception+mapping；"
-            "auto=根据是否传入 --video/--frames-dir 自动判断"
+            "Input mode: "
+            "from_graph=reason over an existing scene_graph.json; "
+            "from_perception=run perception+mapping from a video/frames directory; "
+            "auto=decide automatically from whether --video/--frames-dir is given"
         ),
     )
-    src.add_argument("--graph-json", default=None, help="已有 scene_graph.json；未指定 --video/--frames-dir 时使用")
-    src.add_argument("--pipeline-summary", default=None, help="已有 full_pipeline_summary.json；用于定位 scene_graph.json")
-    src.add_argument("--video", default="/data/ywang/dataset/SpatialMemory/scene0715_00-0.mp4", help="从原始视频开始：采样帧 → perception → scene graph → QA")
+    src.add_argument("--graph-json", default=None, help="Existing scene_graph.json; used when --video/--frames-dir is not given")
+    src.add_argument("--pipeline-summary", default=None, help="Existing full_pipeline_summary.json; used to locate scene_graph.json")
+    src.add_argument("--video", default="/data/ywang/dataset/SpatialMemory/scene0715_00-0.mp4", help="Start from a raw video: sample frames → perception → scene graph → QA")
     src.add_argument("--frames-dir", default=None,
-                     help="从已抽帧目录开始：perception → scene graph → QA；默认与 full_pipeline_test 的 --image-dir 保持一致")
+                     help="Start from an extracted-frames directory: perception → scene graph → QA; default matches full_pipeline_test's --image-dir")
     src.add_argument("--work-dir", default="/data/ywang/my_projects/VideoUnderstanding/Directme/tmp/directme_scal3r_full_pipeline",
-                     help="从 perception 建图时的总工作目录；默认与 full_pipeline_test 的 --work-dir 保持一致")
+                     help="Top-level working directory when building the graph from perception; default matches full_pipeline_test's --work-dir")
     src.add_argument("--run-dir", default=None,
-                     help="DirectMe mapping 输出目录；默认 <work-dir>/directme_mapping_run，与 full_pipeline_test 保持一致")
-    src.add_argument("--frame-dump-dir", default=None, help="视频抽帧保存目录；默认 <work-dir>/frames")
-    src.add_argument("--target-fps", type=float, default=5.0, help="视频采样帧率；论文默认 1 FPS")
-    src.add_argument("--chunk-size", type=int, default=60, help="perception/mapping 每个离线增量 chunk 的帧数；默认 30，与 full_pipeline_test 的 --max-images=30 对齐")
-    src.add_argument("--max-frames", type=int, default=300, help="仅处理前 N 个采样帧；默认与 full_pipeline_test 的 --max-images 保持一致")
-    src.add_argument("--perception-artifact-dir", default=None, help="深度图、检测 tracking 图和视频输出目录；默认 <run-dir>/perception_artifacts")
+                     help="DirectMe mapping output directory; defaults to <work-dir>/directme_mapping_run, matching full_pipeline_test")
+    src.add_argument("--frame-dump-dir", default=None, help="Directory where sampled video frames are saved; defaults to <work-dir>/frames")
+    src.add_argument("--target-fps", type=float, default=5.0, help="Video sampling frame rate; the paper default is 1 FPS")
+    src.add_argument("--chunk-size", type=int, default=60, help="Frames per offline incremental perception/mapping chunk; default 30, aligned with full_pipeline_test's --max-images=30")
+    src.add_argument("--max-frames", type=int, default=300, help="Only process the first N sampled frames; default matches full_pipeline_test's --max-images")
+    src.add_argument("--perception-artifact-dir", default=None, help="Output directory for depth maps, detection tracking images and videos; defaults to <run-dir>/perception_artifacts")
 
     p.add_argument("--qa-json", default="/data/ywang/dataset/SpatialMemory/MC_QAs_v15_norm/scene0715_00-0-mcq.json",
-                   help="UCS-Bench QA JSON；默认与 full_pipeline_test 的 scene0715_00-0 输入场景对齐；若只想建图可传空字符串")
+                   help="UCS-Bench QA JSON; default aligned with full_pipeline_test's scene0715_00-0 input scene; pass an empty string to only build the graph")
 
-    gen = p.add_argument_group("答案生成")
+    gen = p.add_argument_group("Answer generation")
     gen.add_argument("--mode", choices=["rule", "qwen", "internvl"], default="qwen",
-                     help="rule=规则  qwen=Qwen3-VL  internvl=InternVL3")
+                     help="rule=rule-based  qwen=Qwen3-VL  internvl=InternVL3")
     gen.add_argument(
         "--model-path",
         default="/data/ywang/my_projects/VideoUnderstanding/Qwen3-VL-8B-Instruct",
-        help="本地模型路径（mode=qwen 或 mode=internvl 时使用）",
+        help="Local model path (used when mode=qwen or mode=internvl)",
     )
     gen.add_argument("--device-map",   default="auto",
-                     help="PyTorch device_map，如 auto / cuda:0 / cuda:2")
+                     help="PyTorch device_map, e.g. auto / cuda:0 / cuda:2")
     gen.add_argument("--max-new-tokens", type=int, default=32,
-                     help="VLM 最多生成 token 数（多选题 32 足够）")
+                     help="Maximum number of tokens the VLM may generate (32 is enough for multiple choice)")
     gen.add_argument("--max-image-size", type=int, default=512,
-                     help="Qwen3-VL 关键帧最长边缩放上限（像素）")
+                     help="Upper bound on the longest side of Qwen3-VL keyframes (pixels)")
     gen.add_argument("--internvl-image-size", type=int, default=448,
-                     help="InternVL3 预处理分辨率（像素）")
+                     help="InternVL3 preprocessing resolution (pixels)")
 
     per = p.add_argument_group("Perception backend")
     per.add_argument("--backend", choices=["scal3r", "da3", "composed", "toy"], default="scal3r",
-                     help="scal3r=SCAL3R+YOLO-World(+SAM2)，与 full_pipeline_test 保持一致；da3/composed=旧 DA3 路径；toy=快速测试")
+                     help="scal3r=SCAL3R+YOLO-World(+SAM2), consistent with full_pipeline_test; da3/composed=legacy DA3 path; toy=quick testing")
     per.add_argument(
         "--classes-file",
         type=str,
         default="/data/ywang/my_projects/VideoUnderstanding/Directme/directme/perception/adapters/Object.yaml",
-        help="YOLO-World 开放词表 YAML；默认与 full_pipeline_test 的 --classes-file 保持一致",
+        help="YOLO-World open-vocabulary YAML; default matches full_pipeline_test's --classes-file",
     )
     per.add_argument("--classes-json", default=None,
-                     help="YOLO-World 开放词表 JSON，支持 Objects365/COCO categories 格式")
+                     help="YOLO-World open-vocabulary JSON; supports the Objects365/COCO categories format")
     per.add_argument("--class-limit", type=int, default=300,
-                     help="从 --classes-file / --classes-json 读取的类别上限；默认与 full_pipeline_test 的 --class-limit 保持一致；<=0 表示不限制")
+                     help="Maximum number of classes read from --classes-file / --classes-json; default matches full_pipeline_test's --class-limit; <=0 means no limit")
     per.add_argument("--classes", default=None,
-                     help="额外开放词表类别，逗号分隔；会与文件类别合并并去重")
+                     help="Extra open-vocabulary classes, comma-separated; merged with file classes and deduplicated")
     per.add_argument("--device", type=str, default="cuda",
-                     help="perception 运行设备；默认与 full_pipeline_test 的 --device 保持一致")
+                     help="Device to run perception on; default matches full_pipeline_test's --device")
     per.add_argument(
         "--yolo-weights",
         type=str,
         default="/data/ywang/my_projects/VideoUnderstanding/Directme/ckpts/yolo/yolov8m-worldv2.pt",
-        help="YOLO-World 权重；默认与 full_pipeline_test 的 --yolo-weights 保持一致",
+        help="YOLO-World weights; default matches full_pipeline_test's --yolo-weights",
     )
     per.add_argument("--score-threshold", type=float, default=0.15,
-                     help="默认与 full_pipeline_test 的 --score-threshold 保持一致")
+                     help="Default matches full_pipeline_test's --score-threshold")
     per.add_argument("--detection-stride", type=int, default=1,
-                     help="默认与 full_pipeline_test 的 --detection-stride 保持一致")
+                     help="Default matches full_pipeline_test's --detection-stride")
 
-    # 与 full_pipeline_test 保持一致：store_true 且 default=True，默认启用 SAM2。
+    # Consistent with full_pipeline_test: store_true with default=True, so SAM2 is enabled by default.
     per.add_argument("--use-sam2", action="store_true", default=True)
     per.add_argument(
         "--sam2-checkpoint",
@@ -892,18 +893,18 @@ def main() -> int:
         default="/data/ywang/my_projects/VideoUnderstanding/Directme/ckpts/scal3r/scal3r.pt",
     )
     per.add_argument("--scal3r-work-dir", default=None,
-                     help="SCAL3R 临时/输出工作目录；默认 <work-dir>/scal3r_work，与 full_pipeline_test 保持一致")
+                     help="SCAL3R scratch/output working directory; defaults to <work-dir>/scal3r_work, matching full_pipeline_test")
     per.add_argument("--keep-scal3r-work-dir", action="store_true", default=True,
-                     help="默认 True，与 full_pipeline_test 的 keep_work_dir=True 保持一致")
+                     help="True by default, matching full_pipeline_test's keep_work_dir=True")
 
-    # 仅 da3/composed 旧路径使用。
+    # Only used by the legacy da3/composed path.
     per.add_argument("--depth-model", default="depth-anything/DA3NESTED-GIANT-LARGE-1.1")
-    per.add_argument("--use-ray-pose", action="store_true", help="仅 DA3 路径使用")
-    per.add_argument("--process-res", type=int, default=504, help="仅 DA3 路径使用")
+    per.add_argument("--use-ray-pose", action="store_true", help="Only used by the DA3 path")
+    per.add_argument("--process-res", type=int, default=504, help="Only used by the DA3 path")
 
     print("per.video", per.video)
 
-    ret = p.add_argument_group("检索")
+    ret = p.add_argument_group("Retrieval")
     ret.add_argument("--top-k",            type=int,   default=16)
     ret.add_argument("--reachable-radius", type=float, default=10.0, metavar="M")
 
@@ -914,12 +915,12 @@ def main() -> int:
 
     args = p.parse_args()
 
-    # 与 full_pipeline_test 保持一致：
-    # work_dir 是总目录，DirectMe mapping 输出在 <work_dir>/directme_mapping_run。
+    # Consistent with full_pipeline_test:
+    # work_dir is the top-level directory; DirectMe mapping output goes to <work_dir>/directme_mapping_run.
     if not args.run_dir:
         args.run_dir = str(Path(args.work_dir) / "directme_mapping_run")
 
-    # 允许命令行传 --qa-json "" 来只建图、不跑 QA。
+    # Allow passing --qa-json "" on the command line to only build the graph without running QA.
     if args.qa_json == "":
         args.qa_json = None
 
@@ -940,7 +941,7 @@ def main() -> int:
     if input_mode == "from_graph":
         if args.video or args.frames_dir:
             print(
-                "[ERROR] input-mode=from_graph 时不能同时指定 --video 或 --frames-dir。",
+                "[ERROR] input-mode=from_graph cannot be combined with --video or --frames-dir.",
                 file=sys.stderr,
             )
             return 1
@@ -954,23 +955,23 @@ def main() -> int:
     elif input_mode == "from_perception":
         if not args.video and not args.frames_dir:
             print(
-                "[ERROR] input-mode=from_perception 需要指定 --video 或 --frames-dir。",
+                "[ERROR] input-mode=from_perception requires --video or --frames-dir.",
                 file=sys.stderr,
             )
             return 1
 
         if args.video and args.frames_dir:
-            print("[ERROR] --video 与 --frames-dir 只能指定一个。", file=sys.stderr)
+            print("[ERROR] Only one of --video and --frames-dir may be specified.", file=sys.stderr)
             return 1
 
         if args.graph_json or args.pipeline_summary:
             print(
-                "[WARN] input-mode=from_perception 会重新建图，"
-                "--graph-json / --pipeline-summary 将被忽略。"
+                "[WARN] input-mode=from_perception rebuilds the graph; "
+                "--graph-json / --pipeline-summary will be ignored."
             )
 
     else:
-        print(f"[ERROR] 未知 input_mode: {input_mode}", file=sys.stderr)
+        print(f"[ERROR] Unknown input_mode: {input_mode}", file=sys.stderr)
         return 1
 
     try:
@@ -995,9 +996,9 @@ def main() -> int:
 
     if not args.qa_json:
         if input_mode == "from_perception":
-            print("[done] 未指定 --qa-json：已完成 perception→scene_graph 建图，跳过 QA。")
+            print("[done] No --qa-json specified: perception→scene_graph mapping finished, skipping QA.")
         else:
-            print("[done] 未指定 --qa-json：已加载已有 scene graph，跳过 QA。")
+            print("[done] No --qa-json specified: existing scene graph loaded, skipping QA.")
         return 0
 
     try:
@@ -1019,7 +1020,7 @@ def main() -> int:
         json.dumps({"results": results}, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
-    print(f"\n[保存] {out.resolve()}  ({len(results)} 条)")
+    print(f"\n[save] {out.resolve()}  ({len(results)} items)")
     return 0
 
 

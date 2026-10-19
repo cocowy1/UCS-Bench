@@ -111,44 +111,46 @@ OBJECT_ALIASES: dict[str, list[str]] = {
     "car":        ["car", "vehicle", "汽车", "车"],
     "bicycle":    ["bike", "bicycle", "自行车", "单车"],
     "bus":        ["bus", "公交车", "公交"],
-    # --- 改动 B（修正版）：以节点实际 semantic_label 为 KEY ─────────────────
-    # 关键原则：_score_node 检查的是 node.semantic_label.lower() 是否
-    #           包含 intent_label（即 KEY）；alias 列表是用户查询中会出现的词。
+    # --- Change B (revised): key entries by the node's actual semantic_label ---
+    # Key principle: _score_node checks whether node.semantic_label.lower()
+    #                contains intent_label (i.e. the KEY); the alias list holds
+    #                the words that may appear in user queries.
     #
-    # 当前感知端（YOLO-World）把"墙上的纸/海报/照片"都识别成 Picture/Frame。
-    # 所以 KEY = "picture"（能命中 "picture/frame"），
-    # alias 包含 paper/sheet/poster 等用户查询词。
+    # The current perception backend (YOLO-World) recognizes paper/posters/
+    # photos on walls all as Picture/Frame. So KEY = "picture" (which hits
+    # "picture/frame"), while the aliases include user-query words such as
+    # paper/sheet/poster.
     "picture":    ["picture", "pictures", "photo", "photos", "photograph",
                    "frame", "frames", "picture frame",
-                   # 感知误识：墙上的纸被识别为 Picture/Frame
+                   # Perception misdetection: paper on walls gets labeled Picture/Frame
                    "paper", "papers", "sheet", "sheets", "page", "pages",
                    "note", "notes", "poster", "posters", "print",
                    "artwork", "painting",
                    "图片", "照片", "画框", "相框", "纸", "纸张",
                    "便签", "文件", "海报", "画"],
-    # "Blackboard/Whiteboard" 节点
+    # "Blackboard/Whiteboard" nodes
     "blackboard": ["blackboard", "whiteboard", "chalkboard", "board",
                    "black board", "white board",
                    "黑板", "白板", "写字板"],
-    # "Trash bin Can" 节点（已有 trash key，补全 "garbage can" 等组合词）
+    # "Trash bin Can" nodes (a trash key already exists; add compound words like "garbage can")
     "trash_can":  ["trash can", "garbage can", "trash bin", "rubbish bin",
                    "dustbin", "废纸篓"],
-    # "Washing Machine/Drying Machine" 节点
+    # "Washing Machine/Drying Machine" nodes
     "washing":    ["washing machine", "washing", "dryer", "laundry machine",
                    "洗衣机", "烘干机"],
-    # "Barrel/bucket" 节点
+    # "Barrel/bucket" nodes
     "barrel":     ["barrel", "bucket", "pail", "tub",
                    "桶", "水桶", "盆"],
-    # 推车 / 购物车
+    # Trolleys / shopping carts
     "trolley":    ["trolley", "trolleys", "cart", "carts",
                    "shopping cart", "dolly",
                    "推车", "小推车", "手推车", "购物车"],
-    # 手提包（已有 bag key，补精确词）
+    # Handbags (a bag key already exists; add exact words)
     "handbag":    ["handbag", "handbags", "tote", "clutch",
                    "手提包", "手提袋", "提包"],
-    # 打印机
+    # Printers
     "printer":    ["printer", "printers", "打印机"],
-    # 电源插座 → "Power outlet" 节点
+    # Power sockets → "Power outlet" nodes
     "outlet":     ["power outlet", "outlet", "socket", "plug",
                    "插座", "电源插座"],
 }
@@ -157,9 +159,9 @@ OBJECT_ALIASES: dict[str, list[str]] = {
 # Room / place names live in their OWN table because they are not objects in
 # the scene graph — they are surfaced via ``place_visit_timeline`` and via
 # ``EntityNode.attributes["scene_tag"]``. Keeping them out of
-# OBJECT_ALIASES prevents a question like "客厅那个红杯子在哪？" from
-# accidentally adding ``living_room`` to ``QueryIntent.labels`` and skewing
-# retrieval.
+# OBJECT_ALIASES prevents a question like "客厅那个红杯子在哪？" ("where is
+# that red cup in the living room?") from accidentally adding
+# ``living_room`` to ``QueryIntent.labels`` and skewing retrieval.
 ROOM_ALIASES: dict[str, list[str]] = {
     "kitchen":      ["kitchen", "厨房"],
     "living_room":  ["living room", "客厅", "起居室"],

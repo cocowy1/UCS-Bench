@@ -22,8 +22,8 @@ def main() -> None:
     assert graph is not None
 
     current_pose = SE3.from_translation([7.0, 0.0, 0.0])
-    question = "我身边有几个红杯子？在哪？"
-    context = GraphRetriever(graph).retrieve(question, current_pose, language="zh")
+    question = "How many red cups are around me? And where are they?"
+    context = GraphRetriever(graph).retrieve(question, current_pose, language="en")
     answer = RuleBasedAnswerGenerator().answer(context)
 
     print(f"events={len(events)} nodes={len(graph.nodes)}")
