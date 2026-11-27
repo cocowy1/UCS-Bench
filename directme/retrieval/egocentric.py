@@ -172,6 +172,7 @@ def render_egocentric(
     reachable_radius_m: float = DEFAULT_REACHABLE_RADIUS_M,
     lateral_tolerance_ratio: float = DEFAULT_LATERAL_TOLERANCE_RATIO,
     depth_neutral_tolerance_m: float = DEFAULT_DEPTH_NEUTRAL_TOLERANCE_M,
+    p_world_override: np.ndarray | None = None,
 ) -> dict[str, Any]:
     """Render a node's current ego-relative state.
 
@@ -180,8 +181,20 @@ def render_egocentric(
     never on the persistent scene graph. This keeps online QA a strictly read-
     only operation against the graph and prevents query-time state from leaking
     into long-term storage if the graph is saved after a query.
+
+    Args:
+        p_world_override: optional world position to render instead of the
+            node's final anchor. Under strict causal semantics the retriever
+            passes the position recomputed from observations at/before the
+            question timestamp, so post-question motion never leaks into the
+            rendered relation.
     """
-    p_cam = world_to_camera_point(node.spatial_absolute["p_world"], current_world_from_camera)
+    p_world = (
+        np.asarray(p_world_override, dtype=float).reshape(3)
+        if p_world_override is not None
+        else np.asarray(node.spatial_absolute["p_world"], dtype=float).reshape(3)
+    )
+    p_cam = world_to_camera_point(p_world, current_world_from_camera)
     ego = compute_ego_relation(
         p_cam,
         reachable_radius_m=reachable_radius_m,

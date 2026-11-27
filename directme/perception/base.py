@@ -28,6 +28,10 @@ class ObjectObservation:
     p_cam: tuple[float, float, float] | None = None
     attributes: dict[str, Any] = field(default_factory=dict)
     keyframe_path: str | None = None
+    # Quality of the segmentation mask (e.g. SAM2 predicted IoU), when the
+    # perception backend provides one. Used downstream for reliability scoring;
+    # ``None`` simply means "no mask quality signal available".
+    mask_score: float | None = None
 
 
 @dataclass

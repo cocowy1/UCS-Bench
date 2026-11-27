@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""UCS-Bench evaluation with DirectMe + VLM.
+"""UCS-Bench evaluation with DirectMe + VLM (public reproduction entrypoint).
 
-This script runs the full DirectMe evaluation pipeline on UCS-Bench:
+This script runs the DirectMe evaluation pipeline on UCS-Bench and is kept
+**behaviourally aligned** with the internal evaluator
+(``directme.eval.eval_ucsbench``):
 
 1. Load pre-built scene graphs (one per video).
-2. For each question, retrieve the relevant subgraph + keyframes.
-3. Assemble a multiple-choice prompt and send it to the VLM.
-4. Parse the VLM's answer and compare against the ground truth.
-5. Report per-dimension and overall accuracy.
-
-This reproduces the "DirectMe (w/ Qwen3-VL)" row in Table 3 of the paper.
+2. For each question: resolve the ego pose at the question timestamp and
+   retrieve the relevant subgraph **causally** (only observations at/before
+   the question time).
+3. Build the same "spatial memory prior" text as the internal eval and
+   CLIP-rerank the graph keyframes against the question (top-32). When too
+   few keyframes survive, fill up with CLIP-selected original video frames
+   from before the question time so the VLM always has visual evidence.
+4. Assemble the multiple-choice prompt (graph = auxiliary evidence, verify
+   against frames) and send it to the VLM.
+5. Parse the answer, compare with ground truth, report per-dimension and
+   overall accuracy.
 
 Prerequisites
 -------------
@@ -30,11 +37,13 @@ Prerequisites
       "question":        "Where is the vending machine relative to me?",
       "options":         ["A. On your left", "B. Behind you", ...],  # 5-way MC
       "answer_idx":      2,                  # 0-based index of the correct option
-      "dimension":       "position_orientation"  # one of: position_orientation,
-                                                 #   trajectory_movement,
-                                                 #   proximity_reachability,
-                                                 #   category_quantity
+      "dimension":       "position_orientation"
     }
+
+* ``--frames-root`` should point at the extracted 1-fps frames
+  (``<frames-root>/<video_uid>/frame_XXXXXX.png``). Graphs built on another
+  machine store absolute keyframe paths; this root lets the script re-locate
+  them (see ``directme.datasets.frame_paths``).
 
 Usage
 -----
@@ -44,6 +53,7 @@ Via OpenAI-compatible API (vLLM serving Qwen3-VL)::
     python examples/evaluate_ucsbench_vlm.py \
         --questions /data/ucsbench/questions.jsonl \
         --graphs-dir /data/ucsbench/graphs \
+        --frames-root /data/ucsbench/data_frames_1fps \
         --backend openai \
         --model qwen3-vl-8b-instruct \
         --base-url http://localhost:8000/v1 \
@@ -54,8 +64,10 @@ Via local Transformers::
     python examples/evaluate_ucsbench_vlm.py \
         --questions /data/ucsbench/questions.jsonl \
         --graphs-dir /data/ucsbench/graphs \
+        --frames-root /data/ucsbench/data_frames_1fps \
         --backend transformers \
         --model Qwen/Qwen3-VL-8B-Instruct \
+        --clip-model ckpts/clip-vit-base-patch32 \
         --out results/directme_qwen3vl.json
 """
 
@@ -106,6 +118,7 @@ def _get_vlm_answer(
     model: str,
     base_url: str | None,
     api_key: str | None,
+    max_new_tokens: int = 32,
     _vlm_cache: dict[str, Any] = {},
 ) -> str:
     """Send a prompt to the VLM and return the raw response text."""
@@ -142,7 +155,7 @@ def _get_vlm_answer(
                 {"role": "user", "content": content},
             ],
             temperature=0.0,
-            max_tokens=16,
+            max_tokens=max_new_tokens,
         )
         return resp.choices[0].message.content or ""
 
@@ -191,7 +204,7 @@ def _get_vlm_answer(
         ).to(m.device)
 
         with torch.no_grad():
-            gen = m.generate(**inputs, max_new_tokens=16, temperature=0.0, do_sample=False)
+            gen = m.generate(**inputs, max_new_tokens=max_new_tokens, temperature=0.0, do_sample=False)
         trimmed = gen[:, inputs["input_ids"].shape[1]:]
         return processor.batch_decode(trimmed, skip_special_tokens=True)[0]
 
@@ -199,7 +212,104 @@ def _get_vlm_answer(
         raise ValueError(f"Unknown backend: {backend}")
 
 
+def _build_spatial_items(ctx) -> list[dict[str, Any]]:
+    """Same spatial-prior assembly as the internal evaluator."""
+    items = []
+    for it in ctx.items:
+        items.append({
+            "node_id": it.node.node_id,
+            "label": it.node.semantic_label,
+            "color": it.node.attributes.get("color"),
+            "relation": it.egocentric["relation"],
+            "distance_m": it.egocentric["distance_m"],
+            "reachable": it.egocentric["reachable"],
+            "natural_language": it.egocentric["natural_language"],
+            "match_type": it.match_type,
+            "reliability": it.reliability.get("reliability") if it.reliability else None,
+        })
+    return items
+
+
+def _select_keyframe_paths(
+    ctx,
+    question: str,
+    options: list[str],
+    timestamp: float,
+    args,
+    video_uid: str | None = None,
+    clip_model=None,
+    clip_processor=None,
+    clip_device: str = "cuda",
+) -> tuple[list[str], int, int]:
+    """CLIP-reranked causal graph keyframes + original-frame fallback.
+
+    Mirrors ``directme.eval.eval_ucsbench.run_query``: top-``--top-k`` CLIP
+    rerank over the retrieved keyframes; if fewer than ``--min-keyframes``
+    survive, fill up with CLIP-selected original frames from before the
+    question time. Returns ``(paths, n_graph, n_fallback)``.
+    """
+    from directme.eval.eval_ucsbench import (
+        _frame_index_from_path,
+        _uniform_sample,
+        clip_rerank_paths,
+        collect_keyframe_paths,
+    )
+
+    keyframe_paths = collect_keyframe_paths(ctx, frames_root=args.frames_root)
+    clip_query = question + "\n" + "\n".join(
+        f"{chr(65 + i)}. {opt}" for i, opt in enumerate(options)
+    )
+
+    if clip_model is not None:
+        ranked = clip_rerank_paths(
+            question=clip_query,
+            keyframe_paths=keyframe_paths,
+            clip_model=clip_model,
+            clip_processor=clip_processor,
+            top_k=args.top_k,
+            device=clip_device,
+        )
+    else:
+        ranked = keyframe_paths[: args.max_keyframes]
+    n_graph = len(ranked)
+
+    n_fallback = 0
+    if n_graph < args.min_keyframes and args.frames_root and not args.no_frame_fallback:
+        from directme.datasets.frame_paths import iter_video_frames
+
+        all_frames = iter_video_frames(args.frames_root, str(video_uid)) if video_uid else []
+        fps = max(float(args.input_fps), 1e-6)
+        causal_frames = [
+            p for p in all_frames
+            if (idx := _frame_index_from_path(p)) is not None and idx / fps <= timestamp + 0.5
+        ]
+        already = set(keyframe_paths)
+        causal_frames = [p for p in causal_frames if p not in already]
+        causal_frames = _uniform_sample(causal_frames, 256)
+        if causal_frames:
+            if clip_model is not None:
+                filler = clip_rerank_paths(
+                    question=clip_query,
+                    keyframe_paths=causal_frames,
+                    clip_model=clip_model,
+                    clip_processor=clip_processor,
+                    top_k=max(0, min(args.min_keyframes, args.top_k) - n_graph),
+                    device=clip_device,
+                )
+            else:
+                filler = causal_frames[: max(0, args.min_keyframes - n_graph)]
+            ranked = ranked + filler
+            n_fallback = len(filler)
+
+    return ranked, n_graph, n_fallback
+
+
 def run(args: argparse.Namespace) -> None:
+    from directme.eval.eval_ucsbench import (
+        build_directme_prior_text,
+        build_mc_prompt_with_prior,
+        load_clip,
+    )
     from directme.geometry.poses import SE3
     from directme.qa.prompts import MultipleChoicePromptBuilder
     from directme.retrieval.pose_lookup import pose_from_graph_timeline
@@ -214,7 +324,23 @@ def run(args: argparse.Namespace) -> None:
     questions = _load_questions(args.questions)
     print(f"[data] {len(questions)} questions")
 
-    builder = MultipleChoicePromptBuilder(max_keyframes=args.max_keyframes)
+    # Optional CLIP reranker (aligned with the internal eval's 32-frame setup).
+    clip_model = clip_processor = None
+    clip_device = "cpu"
+    if not args.no_clip_rerank:
+        try:
+            import torch
+            clip_device = "cuda" if torch.cuda.is_available() else "cpu"
+            clip_model, clip_processor = load_clip(args.clip_model, device=clip_device)
+            print(f"[clip] loaded {args.clip_model} on {clip_device}")
+        except Exception as exc:
+            print(f"[clip] unavailable ({exc}); falling back to first-N keyframes")
+            clip_model = clip_processor = None
+
+    builder = MultipleChoicePromptBuilder(
+        max_keyframes=args.max_keyframes,
+        frames_root=args.frames_root,
+    )
 
     # 2. Evaluate.
     results: list[dict[str, Any]] = []
@@ -231,37 +357,61 @@ def run(args: argparse.Namespace) -> None:
         graph = graphs[vid]
         timestamp = float(q.get("query_timestamp", q.get("timestamp", 0.0)))
 
-        # Resolve pose.
+        # Resolve pose (causal: newest pose at/before the question time).
         try:
             pose = pose_from_graph_timeline(graph, timestamp=timestamp)
         except Exception:
             pose = SE3.identity()
 
-        # Retrieve subgraph.
-        retriever = GraphRetriever(graph, reachable_radius_m=args.reachable_radius_m)
+        # Retrieve subgraph causally, with the same soft scoring as the
+        # internal evaluator (label/color mismatches down-weight, never
+        # hard-zero; reliability re-ranks).
+        retriever = GraphRetriever(
+            graph,
+            reachable_radius_m=args.reachable_radius_m,
+            strict_causal=not args.no_strict_causal,
+            soft_scoring=not args.no_soft_scoring,
+        )
         context = retriever.retrieve(
             q["question"], pose, language=args.language,
+            top_k=args.top_k,
+            as_of_timestamp=None if args.no_strict_causal else timestamp,
         )
 
-        # Build MC prompt.
+        # Strip option letter prefixes if present (e.g. "A. On your left" → "On your left").
         options_raw = q.get("options", [])
         if not options_raw:
             skipped += 1
             continue
+        options = [re.sub(r"^[A-E][.)]\s*", "", str(opt)) for opt in options_raw]
 
-        # Strip option letter prefixes if present (e.g. "A. On your left" → "On your left").
-        options = []
-        for opt in options_raw:
-            cleaned = re.sub(r"^[A-E]\.\s*", "", str(opt))
-            options.append(cleaned)
+        # Keyframes: CLIP-reranked causal graph keyframes + frame fallback.
+        keyframe_paths, n_graph_kf, n_fallback_kf = _select_keyframe_paths(
+            context, q["question"], options, timestamp, args,
+            video_uid=vid,
+            clip_model=clip_model, clip_processor=clip_processor, clip_device=clip_device,
+        )
 
-        system, parts = builder.build(context, options=options)
+        # Same prior text + MC prompt as the internal evaluator.
+        spatial_items = _build_spatial_items(context)
+        prior_text = build_directme_prior_text(spatial_items, max_items=32)
+        prompt = build_mc_prompt_with_prior(
+            question=q["question"],
+            options={chr(65 + j): opt for j, opt in enumerate(options)},
+            prior_text=prior_text,
+            timestamp_s=timestamp,
+        )
+
+        parts: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
+        for p in keyframe_paths:
+            parts.append({"type": "image", "path": p})
 
         # Call VLM.
         try:
             raw_answer = _get_vlm_answer(
-                system, parts, args.backend, args.model,
+                "", parts, args.backend, args.model,
                 args.base_url, args.api_key,
+                max_new_tokens=args.max_new_tokens,
             )
         except Exception as exc:
             print(f"  [WARN] VLM error on q{i}: {exc}")
@@ -290,6 +440,10 @@ def run(args: argparse.Namespace) -> None:
             "predicted_letter": parsed,
             "raw_answer": raw_answer,
             "correct": correct,
+            "num_keyframes": len(keyframe_paths),
+            "num_graph_keyframes": n_graph_kf,
+            "num_fallback_keyframes": n_fallback_kf,
+            "zero_retrieval": context.count == 0,
         })
 
         if (i + 1) % 50 == 0:
@@ -302,6 +456,8 @@ def run(args: argparse.Namespace) -> None:
     scored = [r for r in results if r["correct"] is not None]
     n_correct = sum(1 for r in scored if r["correct"])
     accuracy = n_correct / len(scored) if scored else 0.0
+    zero_retrieval = sum(1 for r in results if r.get("zero_retrieval"))
+    zero_frames = sum(1 for r in results if r.get("num_keyframes", 0) == 0)
 
     print(f"\n{'='*60}")
     print(f"DirectMe + {args.model} on UCS-Bench")
@@ -311,6 +467,8 @@ def run(args: argparse.Namespace) -> None:
     print(f"Skipped:          {skipped}")
     print(f"Correct:          {n_correct}")
     print(f"Overall accuracy: {accuracy * 100:.1f}%")
+    print(f"Zero-retrieval:   {zero_retrieval} ({zero_retrieval / max(len(results), 1) * 100:.1f}%)")
+    print(f"Zero-keyframe:    {zero_frames} ({zero_frames / max(len(results), 1) * 100:.1f}%)")
     print(f"Time:             {elapsed:.1f}s")
     print()
     print("Per-dimension breakdown:")
@@ -331,7 +489,18 @@ def run(args: argparse.Namespace) -> None:
             "n_scored": len(scored),
             "n_correct": n_correct,
             "n_skipped": skipped,
+            "n_zero_retrieval": zero_retrieval,
+            "n_zero_keyframe": zero_frames,
             "elapsed_seconds": elapsed,
+            "config": {
+                "top_k": args.top_k,
+                "reachable_radius_m": args.reachable_radius_m,
+                "strict_causal": not args.no_strict_causal,
+                "soft_scoring": not args.no_soft_scoring,
+                "clip_rerank": not args.no_clip_rerank,
+                "frame_fallback": not args.no_frame_fallback,
+                "frames_root": args.frames_root,
+            },
             "per_dimension": {
                 dim: {
                     "total": s["total"],
@@ -354,11 +523,36 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--questions", required=True, help="UCS-Bench JSONL path")
     p.add_argument("--graphs-dir", required=True,
                    help="directory containing per-video scene_graph.json files")
+    p.add_argument("--frames-root", default="",
+                   help="root of extracted frames (<root>/<uid>/frame_XXXXXX.png); "
+                        "used to re-locate keyframe paths and for the frame fallback")
     p.add_argument("--out", default="results/ucsbench_eval.json",
                    help="output JSON report path")
     p.add_argument("--language", default="en", choices=["zh", "en"])
-    p.add_argument("--reachable-radius-m", type=float, default=5.0)
-    p.add_argument("--max-keyframes", type=int, default=4)
+    p.add_argument("--reachable-radius-m", type=float, default=10.0,
+                   help="reachability radius in metres (aligned with the internal eval)")
+    p.add_argument("--top-k", type=int, default=32,
+                   help="number of retrieved nodes / CLIP-selected keyframes")
+    p.add_argument("--max-keyframes", type=int, default=32,
+                   help="keyframes sent to the VLM when CLIP rerank is disabled")
+    p.add_argument("--min-keyframes", type=int, default=8,
+                   help="fill up with original frames when fewer graph keyframes survive")
+    p.add_argument("--input-fps", type=float, default=1.0,
+                   help="fps of the extracted frames (for causal frame selection)")
+
+    # Retrieval behaviour switches (defaults match the internal evaluator).
+    p.add_argument("--no-strict-causal", action="store_true",
+                   help="disable question-time causal filtering")
+    p.add_argument("--no-soft-scoring", action="store_true",
+                   help="legacy hard label/color gates (can yield zero retrieval)")
+    p.add_argument("--no-frame-fallback", action="store_true",
+                   help="disable the original-frame fallback")
+
+    # CLIP rerank (optional; aligned with the internal 32-frame setup).
+    p.add_argument("--clip-model", default="ckpts/clip-vit-base-patch32",
+                   help="local CLIP checkpoint for keyframe reranking")
+    p.add_argument("--no-clip-rerank", action="store_true",
+                   help="disable CLIP reranking (use first-N keyframes instead)")
 
     # VLM.
     p.add_argument("--backend", required=True, choices=["openai", "transformers"],
@@ -366,6 +560,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--model", default="qwen3-vl-8b-instruct")
     p.add_argument("--base-url", default=None)
     p.add_argument("--api-key", default=None)
+    p.add_argument("--max-new-tokens", type=int, default=32)
 
     return p
 

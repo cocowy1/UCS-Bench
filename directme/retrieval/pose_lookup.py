@@ -33,16 +33,21 @@ def pose_from_graph_timeline(
     timestamp: float | None = None,
     *,
     max_time_delta_s: float | None = None,
+    allow_future: bool = False,
 ) -> SE3:
-    """Return the latest / nearest ego pose stored in ``graph.metadata``.
+    """Return the ego pose stored in ``graph.metadata`` for a query time.
 
     Args:
         graph: Scene graph whose metadata may contain ``ego_pose_timeline``.
         timestamp: If ``None``, return the latest valid pose. Otherwise return
             the pose whose timestamp is closest to the requested query time.
-        max_time_delta_s: Optional guardrail. If set and the closest pose is
+        max_time_delta_s: Optional guardrail. If set and the chosen pose is
             farther than this many seconds from ``timestamp``, return identity
             instead of a stale pose.
+        allow_future: Legacy switch. By default (v0.6, causal semantics) only
+            poses recorded at/before ``timestamp`` are eligible — the old
+            nearest-by-absolute-difference behaviour could return a pose from
+            *after* the question time, leaking future ego motion.
 
     Returns:
         A valid :class:`SE3`. Falls back to identity only when no valid timeline
@@ -69,7 +74,13 @@ def pose_from_graph_timeline(
         return max(valid, key=lambda x: x[0])[1]
 
     target = float(timestamp)
-    ts, pose = min(valid, key=lambda x: abs(x[0] - target))
+    if allow_future:
+        ts, pose = min(valid, key=lambda x: abs(x[0] - target))
+    else:
+        # Causal: newest pose at/before the query time; fall back to the
+        # earliest pose when the query predates the whole timeline.
+        causal = [x for x in valid if x[0] <= target]
+        ts, pose = max(causal, key=lambda x: x[0]) if causal else min(valid, key=lambda x: x[0])
     if max_time_delta_s is not None and abs(ts - target) > max_time_delta_s:
         return SE3.identity()
     return pose

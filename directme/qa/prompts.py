@@ -25,9 +25,9 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
+from directme.datasets.frame_paths import resolve_frame_path
 from directme.retrieval.retriever import GraphRetriever, RetrievedContext
 
 
@@ -38,24 +38,32 @@ from directme.retrieval.retriever import GraphRetriever, RetrievedContext
 SYSTEM_PROMPT_EN = """\
 You are an egocentric spatial QA assistant. You observe the world through a \
 first-person wearable camera. A pose-anchored scene-graph memory has been \
-built incrementally from the video stream and is provided below. The graph \
-stores objects in a shared world coordinate frame; at question time, each \
-object is projected into the current camera frame to compute its egocentric \
-relation (front / behind / left / right / front_left / front_right / \
-behind_left / behind_right), Euclidean distance, and reachability.
+built incrementally from the video stream by an automatic perception and \
+tracking pipeline (open-vocabulary detection, mask segmentation, tracking, \
+and depth-based localization). It stores objects in a shared world coordinate \
+frame; at question time, each object is projected into the current camera \
+frame to compute its egocentric relation (front / behind / left / right / \
+front_left / front_right / behind_left / behind_right), Euclidean distance, \
+and reachability.
 
-Use ONLY the provided graph summary and supporting keyframes to answer. \
-Spatial descriptions such as "to your left" or "behind you" refer to the \
-camera wearer's current orientation."""
+The graph is auxiliary evidence, not ground truth: it may contain a small \
+amount of detection, tracking, or localization noise. Use it to narrow down \
+candidates and for spatial context, but verify its claims against the \
+supporting keyframes (original frames from the video). When the graph and the \
+visual evidence disagree, trust what you can see in the frames. Spatial \
+descriptions such as "to your left" or "behind you" refer to the camera \
+wearer's current orientation."""
 
 SYSTEM_PROMPT_ZH = """\
 你是一个第一人称空间问答助手。你通过佩戴式摄像头观察世界。一个基于视频流增量构建的\
-姿态锚定场景图记忆已提供如下。场景图以统一的世界坐标系存储物体；在提问时刻，每个物\
-体被投影到当前相机坐标系以计算其自我中心方位关系（正前方 / 正后方 / 左侧 / 右侧 / \
+姿态锚定场景图记忆已提供如下，它由自动感知与跟踪流水线（开放词汇检测、掩码分割、跟\
+踪、基于深度的定位）构建。场景图以统一的世界坐标系存储物体；在提问时刻，每个物体被\
+投影到当前相机坐标系以计算其自我中心方位关系（正前方 / 正后方 / 左侧 / 右侧 / \
 左前方 / 右前方 / 左后方 / 右后方）、距离和可达性。
 
-请仅依据提供的场景图摘要和关键帧图像来回答。空间描述（如"在您的左侧"）以相机佩戴\
-者当前朝向为参考。"""
+场景图是辅助证据而非真值：其中可能包含少量检测、跟踪或定位噪声。请用它缩小候选范围\
+并提供空间上下文，同时结合关键帧图像（来自视频的原始帧）进行核验；当两者冲突时，以\
+图像中可见的内容为准。空间描述（如"在您的左侧"）以相机佩戴者当前朝向为参考。"""
 
 
 # ---------------------------------------------------------------------------
@@ -72,6 +80,10 @@ class DirectMePromptBuilder:
     """
 
     max_keyframes: int = 4
+    # Optional root for re-locating keyframe paths stored inside a graph that
+    # was built on another machine (portable graphs). See
+    # directme.datasets.frame_paths.resolve_frame_path.
+    frames_root: str | None = None
 
     def build_text_prompt(self, context: RetrievedContext) -> str:
         """Legacy text-only prompt (backward compatible)."""
@@ -79,9 +91,11 @@ class DirectMePromptBuilder:
         keyframes = "\n".join(f"- {p}" for p in context.keyframes) or "- none"
         return f"""You are an egocentric video QA assistant.
 
-Use only the provided pose-anchored scene graph summary and supporting keyframes.
-The graph stores objects in a world coordinate frame and renders them into the
-current camera frame at question time.
+You are given a pose-anchored scene graph summary (auxiliary evidence built
+automatically by a perception/tracking pipeline — it may contain detection,
+tracking, or localization noise) and supporting keyframes from the video.
+Verify the graph's claims against the keyframes; when they disagree, trust
+what is visible in the frames.
 
 {graph_summary}
 
@@ -118,8 +132,9 @@ Answer with a concise, spatially grounded response."""
 
         parts: list[dict[str, Any]] = [{"type": "text", "text": text}]
         for kf_path in context.keyframes[: self.max_keyframes]:
-            if kf_path and Path(kf_path).exists():
-                parts.append({"type": "image", "path": kf_path})
+            resolved = resolve_frame_path(kf_path, frames_root=self.frames_root)
+            if resolved:
+                parts.append({"type": "image", "path": resolved})
 
         return system, parts
 
@@ -152,6 +167,9 @@ class MultipleChoicePromptBuilder:
     """
 
     max_keyframes: int = 4
+    # Optional root for re-locating keyframe paths stored inside a graph that
+    # was built on another machine (portable graphs).
+    frames_root: str | None = None
 
     def build(
         self,
@@ -190,8 +208,9 @@ Question:
 
         parts: list[dict[str, Any]] = [{"type": "text", "text": text}]
         for kf_path in context.keyframes[: self.max_keyframes]:
-            if kf_path and Path(kf_path).exists():
-                parts.append({"type": "image", "path": kf_path})
+            resolved = resolve_frame_path(kf_path, frames_root=self.frames_root)
+            if resolved:
+                parts.append({"type": "image", "path": resolved})
 
         return system, parts
 

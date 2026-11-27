@@ -58,6 +58,15 @@ class RetrievalConfig:
     include_keyframes: bool = True
     reachable_radius_m: float = 5.0          # depth-based reachability threshold
     lateral_tolerance_ratio: float = 0.20    # cone width for "front"/"behind" centering
+    # Root of the extracted video frames (layout <root>/<uid>/frame_XXXXXX.png).
+    # Used to re-locate keyframe paths when a graph is loaded on a machine
+    # where the original absolute paths do not exist (portable graphs).
+    frames_root: str | None = None
+    # v0.6 retrieval behaviour (see GraphRetriever): strict causal filtering by
+    # the question timestamp and soft (down-weighting, never hard-zero) label
+    # / color scoring.
+    strict_causal: bool = True
+    soft_scoring: bool = True
 
 
 @dataclass

@@ -171,10 +171,15 @@ def load_clip(model_name, device="cuda"):
     )
     return clip_model, clip_processor
 
-def collect_keyframe_paths(ctx) -> list[str]:
+def collect_keyframe_paths(ctx, frames_root: str | None = None) -> list[str]:
+    from directme.datasets.frame_paths import resolve_frame_path
+
     paths = []
     for it in ctx.items:
-        for kf in getattr(it.node, "keyframes", []) or []:
+        # Prefer the item's causal keyframe list (strict-causal retrieval);
+        # fall back to the node's persisted diversity-selected keyframes.
+        kf_sources = list(getattr(it, "keyframes", []) or []) or list(getattr(it.node, "keyframes", []) or [])
+        for kf in kf_sources:
             if isinstance(kf, str):
                 p = kf
             elif isinstance(kf, dict):
@@ -182,8 +187,9 @@ def collect_keyframe_paths(ctx) -> list[str]:
             else:
                 p = getattr(kf, "path", None) or getattr(kf, "image_path", None)
 
-            if p and os.path.exists(p):
-                paths.append(p)
+            resolved = resolve_frame_path(p, frames_root=frames_root)
+            if resolved:
+                paths.append(resolved)
 
     # Deduplicate while preserving order
     seen = set()
@@ -196,14 +202,15 @@ def collect_keyframe_paths(ctx) -> list[str]:
 
 
 @torch.no_grad()
-def clip_rerank_keyframes(
+def clip_rerank_paths(
     question: str,
     keyframe_paths: list[str],
     clip_model,
     clip_processor,
     top_k: int = 8,
     device: str = "cuda",
-) -> list[Image.Image]:
+) -> list[str]:
+    """CLIP-score ``keyframe_paths`` against ``question``; return top-k paths."""
     if not keyframe_paths:
         return []
 
@@ -256,7 +263,47 @@ def clip_rerank_keyframes(
     order = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
     order = order[:top_k]
 
-    return [images[i] for i in order]
+    return [valid_paths[i] for i in order]
+
+
+@torch.no_grad()
+def clip_rerank_keyframes(
+    question: str,
+    keyframe_paths: list[str],
+    clip_model,
+    clip_processor,
+    top_k: int = 8,
+    device: str = "cuda",
+) -> list[Image.Image]:
+    ranked = clip_rerank_paths(
+        question=question,
+        keyframe_paths=keyframe_paths,
+        clip_model=clip_model,
+        clip_processor=clip_processor,
+        top_k=top_k,
+        device=device,
+    )
+    images: list[Image.Image] = []
+    for p in ranked:
+        try:
+            images.append(Image.open(p).convert("RGB"))
+        except Exception:
+            continue
+    return images
+
+def _frame_index_from_path(path: str) -> int | None:
+    """Extract the integer frame index from a ``frame_000123.png`` filename."""
+    m = re.search(r"frame[_-]?(\d+)\.", os.path.basename(path))
+    return int(m.group(1)) if m else None
+
+
+def _uniform_sample(items: list, limit: int) -> list:
+    """Keep at most ``limit`` items spread evenly over the list."""
+    if limit <= 0 or len(items) <= limit:
+        return list(items)
+    step = len(items) / float(limit)
+    return [items[int(i * step)] for i in range(limit)]
+
 
 def qa_to_item(qa: QAItem, clip_model, clip_processor, clip_device):
     return {
@@ -285,11 +332,15 @@ def build_directme_prior_text(spatial_items: list[dict], max_items: int = 12) ->
     for i, it in enumerate(spatial_items[:max_items], 1):
         color = it.get("color")
         color_txt = f", color={color}" if color and color != "unknown" else ""
+        rel = it.get("reliability")
+        rel_txt = f", reliability={rel:.2f}" if isinstance(rel, float) else ""
+        weak_txt = " [weak match]" if it.get("match_type") == "fallback" else ""
         lines.append(
             f"{i}. object={it.get('label')}{color_txt}, "
             f"relation={it.get('relation')}, "
             f"distance={it.get('distance_m'):.2f}m, "
-            f"reachable={it.get('reachable')}, "
+            f"reachable={it.get('reachable')}"
+            f"{rel_txt}{weak_txt}, "
             f"description={it.get('natural_language')}"
         )
 
@@ -366,6 +417,11 @@ def run_query(
     language: str | None = None,
     top_k: int = 32,
     reachable_radius_m: float = 10.0,
+    frames_root: str | None = None,
+    input_fps: float = 1.0,
+    min_keyframes: int = 8,
+    strict_causal: bool = True,
+    soft_scoring: bool = True,
 ) -> dict[str, Any]:
     """Run the full retrieve-render-generate flow for a single UCS-Bench QA entry.
 
@@ -375,13 +431,16 @@ def run_query(
     2. Interpolate the nearest ego pose from the ego_pose_timeline
     3. GraphRetriever fetches top-k nodes; render_egocentric computes the
        8-way egocentric bearing
-    4. Generate the answer:
-       - With options → dm.answer_mc()
-         * rule mode: RuleBasedAnswerGenerator + Jaccard fallback
-         * qwen/internvl: MC prompt + keyframe PIL images → local VLM → letter label
+    4. Keyframe assembly: CLIP-reranked graph keyframes; if too few survive
+       (< ``min_keyframes``), fill up with CLIP-selected *original video
+       frames* from before the question time so the VLM always has visual
+       evidence (fixes the zero-keyframe blind-guess failure mode).
+    5. Generate the answer:
+       - With options → MC prompt + keyframe PIL images → local VLM → letter
        - Without options → dm.answer() (free text)
-    5. Return a result dict with the predicted label and a correctness flag
+    6. Return a result dict with the predicted label and a correctness flag
     """
+    from directme.datasets.frame_paths import iter_video_frames
     from directme.retrieval.pose_lookup import pose_from_graph_timeline
     from directme.retrieval.query_parser import parse_query
     from directme.retrieval.retriever import GraphRetriever
@@ -404,7 +463,12 @@ def run_query(
 
     # ── Scene graph retrieval (feeds the spatial_items display fields) ────────
     intent = parse_query(question, language=lang)
-    retriever = GraphRetriever(dm.graph, reachable_radius_m=reachable_radius_m)
+    retriever = GraphRetriever(
+        dm.graph,
+        reachable_radius_m=reachable_radius_m,
+        strict_causal=strict_causal,
+        soft_scoring=soft_scoring,
+    )
     ctx = retriever.retrieve(
         question, current_pose,
         top_k=top_k,
@@ -426,7 +490,9 @@ def run_query(
             "distance_m":       it.egocentric["distance_m"],
             "reachable":        it.egocentric["reachable"],
             "natural_language": it.egocentric["natural_language"],
-            "keyframes":        it.node.keyframes,
+            "match_type":       it.match_type,
+            "reliability":      it.reliability.get("reliability") if it.reliability else None,
+            "keyframes":        it.keyframes or it.node.keyframes,
         }
         for it in ctx.items
     ]
@@ -435,11 +501,14 @@ def run_query(
     options: dict[str, str] = item.get("options", {})
     predicted_label: str | None = None
     raw_answer: str = ""
+    keyframe_images: list = []
+    n_graph_keyframes = 0
+    n_fallback_keyframes = 0
 
     if options:
         prior_text = build_directme_prior_text(spatial_items, max_items=32)
 
-        keyframe_paths = collect_keyframe_paths(ctx)
+        keyframe_paths = collect_keyframe_paths(ctx, frames_root=frames_root)
 
         clip_model = item.get("_clip_model")
         clip_processor = item.get("_clip_processor")
@@ -457,6 +526,35 @@ def run_query(
             top_k=clip_top_k,
             device=clip_device,
         )
+        n_graph_keyframes = len(keyframe_images)
+
+        # ── Fallback: fill sparse/empty keyframes with original frames ≤ t_q ──
+        # The scene graph is auxiliary evidence; when it retrieves nothing
+        # (vocabulary mismatch, empty causal pool) the MLLM must still see the
+        # video. Sample original frames from before the question time and let
+        # CLIP pick the most question-relevant ones.
+        if n_graph_keyframes < min_keyframes and frames_root:
+            video_uid = item.get("video_uid")
+            all_frames = iter_video_frames(frames_root, str(video_uid)) if video_uid else []
+            fps = max(float(input_fps), 1e-6)
+            causal_frames = [
+                p for p in all_frames
+                if (idx := _frame_index_from_path(p)) is not None and idx / fps <= ts_s + 0.5
+            ]
+            already = set(keyframe_paths)
+            causal_frames = [p for p in causal_frames if p not in already]
+            causal_frames = _uniform_sample(causal_frames, 256)
+            if causal_frames:
+                filler = clip_rerank_keyframes(
+                    question=clip_query,
+                    keyframe_paths=causal_frames,
+                    clip_model=clip_model,
+                    clip_processor=clip_processor,
+                    top_k=max(0, min(min_keyframes, clip_top_k) - n_graph_keyframes),
+                    device=clip_device,
+                )
+                keyframe_images = keyframe_images + filler
+                n_fallback_keyframes = len(filler)
 
         prompt = build_mc_prompt_with_prior(
             question=question,
@@ -499,6 +597,9 @@ def run_query(
         "qtype":           item.get("qtype"),
         "task_difficulty": item.get("task_difficulty"),
         "num_keyframes": len(keyframe_images) if options else 0,
+        "num_graph_keyframes": n_graph_keyframes if options else 0,
+        "num_fallback_keyframes": n_fallback_keyframes if options else 0,
+        "zero_retrieval": (ctx.count == 0),
 
         "intent": {
             "labels":             intent.labels,
@@ -582,6 +683,11 @@ def run_batch(
     top_k: int,
     reachable_radius_m: float,
     verbose: bool,
+    frames_root: str | None = None,
+    input_fps: float = 1.0,
+    min_keyframes: int = 8,
+    strict_causal: bool = True,
+    soft_scoring: bool = True,
 ) -> list[dict[str, Any]]:
     from collections import defaultdict
 
@@ -596,6 +702,11 @@ def run_batch(
                 language=language,
                 top_k=top_k,
                 reachable_radius_m=reachable_radius_m,
+                frames_root=frames_root,
+                input_fps=input_fps,
+                min_keyframes=min_keyframes,
+                strict_causal=strict_causal,
+                soft_scoring=soft_scoring,
             )
             results.append(result)
             _print_result(result, verbose=verbose)
@@ -792,10 +903,15 @@ def build_mc_prompt_with_prior(question, options, prior_text, timestamp_s=None):
         "1. Visual keyframes retrieved from the video.\n"
         "2. DirectMe spatial memory retrieved from the scene graph.\n\n"
 
-        "DirectMe spatial memory contains object labels, colors, egocentric relations, "
-        "distances, reachability, and natural-language spatial descriptions.\n"
-        "Use it as contextual evidence, but it may be incomplete or noisy.\n"
-        "If visual evidence and spatial memory conflict, prefer visual evidence.\n\n"
+        "The spatial memory was built automatically by a perception and tracking "
+        "pipeline (open-vocabulary detection, mask segmentation, tracking, and "
+        "depth-based localization) running over the video. It may contain a small "
+        "amount of detection, tracking, or localization noise; entries marked with "
+        "lower reliability or 'weak match' are less certain.\n"
+        "Treat it as auxiliary evidence that helps narrow down candidates and "
+        "provides spatial context. Always verify its claims against the visual "
+        "keyframes, which are original frames from the video. If the two disagree, "
+        "trust what you can see in the frames.\n\n"
 
         "Reasoning rules:\n"
         "- Compare every option A, B, C, D, and E against the visual keyframes and spatial memory.\n"
@@ -853,6 +969,18 @@ def main():
     parser.add_argument("--reachable_radius", type=float, default=10.0)
     parser.add_argument("--language", choices=["en", "zh"], default="en")
 
+    # v0.6 retrieval behaviour switches (see directme/retrieval/retriever.py)
+    parser.add_argument("--no_strict_causal", action="store_true",
+                        help="legacy mode: only node existence is filtered by the question timestamp")
+    parser.add_argument("--no_soft_scoring", action="store_true",
+                        help="legacy mode: label/color mismatches hard-zero a node's score")
+    parser.add_argument("--min_keyframes", type=int, default=8,
+                        help="fill up with CLIP-selected original frames (<= t_q) when fewer graph keyframes survive")
+    parser.add_argument("--no_frame_fallback", action="store_true",
+                        help="disable the original-frame fallback for sparse/empty keyframes")
+    parser.add_argument("--input_fps_for_fallback", type=float, default=None,
+                        help="fps used to map frame indices to timestamps for the fallback (default: --input_fps)")
+
     parser.add_argument("--max_new_tokens", type=int, default=32)
     parser.add_argument("--max_image_size", type=int, default=512)
     parser.add_argument("--internvl_image_size", type=int, default=448)
@@ -904,6 +1032,19 @@ def main():
 
     details = []
 
+    # Build the VLM/generator ONCE and swap the graph per video. Rebuilding
+    # DirectMe inside the loop re-loaded the full VLM weights for every video,
+    # which dominated wall-clock time on multi-video runs.
+    dm = build_directme(
+        mode=args.mode,
+        model_path=args.model_path,
+        device_map=args.device_map,
+        graph=None,
+        max_new_tokens=args.max_new_tokens,
+        max_image_size=args.max_image_size,
+        internvl_image_size=args.internvl_image_size,
+    )
+
     for video_uid, qa_items in video2qas.items():
         if args.from_perception:
             try:
@@ -931,15 +1072,7 @@ def main():
         print(f"[GRAPH] {graph_json}")
 
 
-        dm = build_directme(
-            mode=args.mode,
-            model_path=args.model_path,
-            device_map=args.device_map,
-            graph=graph,
-            max_new_tokens=args.max_new_tokens,
-            max_image_size=args.max_image_size,
-            internvl_image_size=args.internvl_image_size,
-        )
+        dm.graph = graph
 
         items = [
             qa_to_item(qa, clip_model, clip_processor, clip_device)
@@ -953,6 +1086,11 @@ def main():
             top_k=args.top_k,
             reachable_radius_m=args.reachable_radius,
             verbose=False,
+            frames_root=None if args.no_frame_fallback else args.frames_root,
+            input_fps=args.input_fps_for_fallback or args.input_fps,
+            min_keyframes=args.min_keyframes,
+            strict_causal=not args.no_strict_causal,
+            soft_scoring=not args.no_soft_scoring,
         )
 
         qa_by_qid = {qa.qid: qa for qa in qa_items}
@@ -988,6 +1126,9 @@ def main():
                 "subcategory": qa.subcategory,
                 "matched_count": result.get("matched_count"),
                 "reachable_count": result.get("reachable_count"),
+                "num_graph_keyframes": result.get("num_graph_keyframes", 0),
+                "num_fallback_keyframes": result.get("num_fallback_keyframes", 0),
+                "zero_retrieval": result.get("zero_retrieval", False),
                 "spatial_items": result.get("spatial_items", []),
                 "graph_json": graph_json,
             })
@@ -1014,6 +1155,10 @@ def main():
             "model_path": args.model_path,
             "top_k": args.top_k,
             "reachable_radius": args.reachable_radius,
+            "strict_causal": not args.no_strict_causal,
+            "soft_scoring": not args.no_soft_scoring,
+            "min_keyframes": args.min_keyframes,
+            "frame_fallback": not args.no_frame_fallback,
         },
     }
 

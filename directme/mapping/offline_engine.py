@@ -253,6 +253,7 @@ class OfflineMappingEngine:
                     pose_confidence=pose_conf,
                     keyframe_path=obj.keyframe_path or frame_perception.frame.image_path,
                     bbox_xyxy=obj.bbox_xyxy,
+                    mask_score=getattr(obj, "mask_score", None),
                 )
                 events.append(
                     MappingEvent(

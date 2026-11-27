@@ -209,7 +209,10 @@ def _contains_term(text: str, term: str) -> bool:
     Chinese aliases are matched by substring. English aliases use token
     boundaries so short labels such as ``cup`` do not fire on ``cupboard`` or
     ``car`` on ``cart``. Multi-word aliases (``remote control``) are matched
-    with flexible whitespace.
+    with flexible whitespace. English aliases additionally match a simple
+    plural form of the final word (``sofa`` → ``sofas``, ``couch`` →
+    ``couches``), so count questions phrased in the plural still resolve to
+    an intent label.
     """
     t = term.lower().strip()
     if not t:
@@ -219,6 +222,8 @@ def _contains_term(text: str, term: str) -> bool:
     pieces = [re.escape(part) for part in re.split(r"\s+", t) if part]
     if not pieces:
         return False
+    # Allow an optional English plural suffix on the final token.
+    pieces[-1] = pieces[-1] + r"(?:e?s)?"
     pattern = r"(?<![a-z0-9])" + r"\s+".join(pieces) + r"(?![a-z0-9])"
     return re.search(pattern, text) is not None
 

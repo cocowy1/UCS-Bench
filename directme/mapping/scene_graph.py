@@ -120,6 +120,12 @@ class ObservationRecord:
     keyframe_path: str | None = None
     bbox_xyxy: tuple[float, float, float, float] | None = None
     bbox_area: float = 0.0  # used for keyframe selection
+    # Per-observation detector label (v0.6+): enables track-level semantic
+    # voting and query-time label-consistency scoring. Older graphs simply
+    # carry ``None`` and consumers fall back to the node-level label.
+    label: str | None = None
+    # Per-observation mask quality (e.g. SAM2 predicted IoU), when available.
+    mask_score: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return _jsonable(self.__dict__)
@@ -129,6 +135,8 @@ class ObservationRecord:
         kwargs = dict(data)
         kwargs.setdefault("pose_confidence", 1.0)
         kwargs.setdefault("bbox_area", 0.0)
+        kwargs.setdefault("label", None)
+        kwargs.setdefault("mask_score", None)
         return cls(**kwargs)
 
 
@@ -145,12 +153,37 @@ class EntityNode:
     place_id: str | None = None
     created_at: float | None = None
     updated_at: float | None = None
+    # First time this node was observed (v0.6+). Persisted explicitly so the
+    # causal candidate filter does not depend on ``observations[0]``, which is
+    # unreliable once the observation list is truncated to the most recent
+    # ``max_observations`` entries.
+    first_seen_timestamp: float | None = None
     # NOTE: ``spatial_egocentric_dynamic`` is *intentionally not* a field on
     # the node. Egocentric state is computed per-query by
     # :func:`directme.retrieval.egocentric.render_egocentric` and lives on the
     # per-query :class:`RetrievedItem`. Keeping it off the node guarantees
     # that saving the graph after a query never persists a stale camera-frame
     # snapshot. See architecture invariant 4 in docs/architecture.md.
+
+    @property
+    def first_seen(self) -> float | None:
+        """Best-effort first-sighting time for causal filtering.
+
+        Preference order: the explicitly persisted ``first_seen_timestamp``,
+        then ``created_at`` (the node's spawn time — for pre-v0.6 graphs this
+        is the most accurate signal), then the oldest surviving observation
+        (unreliable once the list is truncated, but better than nothing).
+        """
+        if self.first_seen_timestamp is not None:
+            return float(self.first_seen_timestamp)
+        if self.created_at is not None:
+            return float(self.created_at)
+        if self.observations:
+            try:
+                return float(self.observations[0].timestamp)
+            except (TypeError, ValueError):
+                pass
+        return None
 
     @property
     def p_world(self) -> np.ndarray:
@@ -318,6 +351,7 @@ class EntityNode:
             "track_ids": self.track_ids,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
+            "first_seen_timestamp": self.first_seen_timestamp,
         }
 
     @classmethod
@@ -339,6 +373,7 @@ class EntityNode:
             track_ids=list(data.get("track_ids", [])),
             created_at=data.get("created_at"),
             updated_at=data.get("updated_at"),
+            first_seen_timestamp=data.get("first_seen_timestamp"),
         )
 
 
@@ -466,6 +501,7 @@ class SceneGraph:
         pose_confidence: float = 1.0,
         keyframe_path: str | None = None,
         bbox_xyxy: tuple[float, float, float, float] | None = None,
+        mask_score: float | None = None,
     ) -> tuple[EntityNode, str]:
         attributes = dict(attributes or {})
         if "color" in attributes:
@@ -498,6 +534,8 @@ class SceneGraph:
             keyframe_path=keyframe_path,
             bbox_xyxy=bbox_xyxy,
             bbox_area=float(bbox_area),
+            label=label,
+            mask_score=None if mask_score is None else float(mask_score),
         )
 
         if match is None:
@@ -520,6 +558,7 @@ class SceneGraph:
                 track_ids=[track_id] if track_id else [],
                 created_at=float(timestamp),
                 updated_at=float(timestamp),
+                first_seen_timestamp=float(timestamp),
             )
             self.nodes[node_id] = node
             return node, "spawn"

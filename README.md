@@ -342,6 +342,8 @@ For example, if you are serving Qwen3-VL through vLLM:
 python examples/evaluate_ucsbench_vlm.py \
   --questions data/UCS-Bench/questions.jsonl \
   --graphs-dir data/UCS-Bench/graphs \
+  --frames-root data/UCS-Bench/data_frames_1fps \
+  --clip-model ckpts/clip-vit-base-patch32 \
   --backend openai \
   --model qwen3-vl-8b-instruct \
   --base-url http://localhost:8000/v1 \
@@ -355,10 +357,39 @@ python examples/evaluate_ucsbench_vlm.py \
 python examples/evaluate_ucsbench_vlm.py \
   --questions data/UCS-Bench/questions.jsonl \
   --graphs-dir data/UCS-Bench/graphs \
+  --frames-root data/UCS-Bench/data_frames_1fps \
+  --clip-model ckpts/clip-vit-base-patch32 \
   --backend transformers \
   --model Qwen/Qwen3-VL-8B-Instruct \
   --out results/directme_qwen3vl.json
 ```
+
+#### Reproduction notes (v0.6)
+
+The public evaluation script is behaviourally aligned with the internal
+evaluator (`directme/eval/eval_ucsbench.py`):
+
+* **Causal retrieval at the question timestamp** — only nodes, observations,
+  positions, keyframes, and timeline entries recorded at or before the
+  question time are used (`--no-strict-causal` restores the legacy
+  existence-only filter).
+* **Soft scoring** — label/color mismatches down-weight a candidate instead
+  of hard-zeroing it, so question/detector vocabulary mismatches (e.g.
+  "couch" vs the Objects365 label "Couch") no longer produce zero retrieval;
+  every candidate additionally carries a reliability score
+  (`--no-soft-scoring` restores the legacy hard gates).
+* **32-frame CLIP rerank + original-frame fallback** — keyframes are
+  CLIP-scored against the question; when fewer than `--min-keyframes`
+  survive, CLIP-selected *original frames from before the question time*
+  fill the slot so the VLM always has visual evidence (`--no-frame-fallback`
+  disables this).
+* **Portable keyframe paths** — graphs may store keyframe paths relative to
+  the frames root (`<uid>/frame_XXXXXX.png`); pass `--frames-root`
+  (`--frames_root` for the internal evaluator) and paths are re-located
+  automatically, so graphs built on another machine keep working.
+* The prompt describes the scene graph as auxiliary evidence produced by an
+  automatic perception/tracking pipeline that may contain detection,
+  tracking, or localization noise, to be verified against the raw frames.
 
 ### 4. VLM baselines (uniform / stream frame sampling)
 

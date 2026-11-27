@@ -493,6 +493,8 @@ class DirectMe:
             self.graph,
             reachable_radius_m=self.config.retrieval.reachable_radius_m,
             lateral_tolerance_ratio=self.config.retrieval.lateral_tolerance_ratio,
+            strict_causal=self.config.retrieval.strict_causal,
+            soft_scoring=self.config.retrieval.soft_scoring,
         )
 
     def retrieve(
@@ -581,7 +583,10 @@ class DirectMe:
 
         max_kf = 6 if is_count else 4
 
-        system_prompt, parts = MultipleChoicePromptBuilder(max_keyframes=max_kf).build(
+        system_prompt, parts = MultipleChoicePromptBuilder(
+            max_keyframes=max_kf,
+            frames_root=self.config.retrieval.frames_root,
+        ).build(
             ctx, options, labels
         )
         text = next((p["text"] for p in parts if p["type"] == "text"), "")

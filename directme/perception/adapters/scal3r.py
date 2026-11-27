@@ -622,6 +622,7 @@ class Scal3RComposedBackend(PerceptionBackend):
                         mask=getattr(det, "mask", None),
                         attributes=attrs,
                         keyframe_path=frame.image_path,
+                        mask_score=getattr(det, "mask_score", None),
                     )
                 )
 

@@ -180,6 +180,8 @@ class Detection:
     mask: np.ndarray | None = None      # (H, W) bool
     embedding: np.ndarray | None = None  # (D,) float32, optional
     track_id: str | None = None
+    # SAM2 predicted mask quality (IoU estimate) when a segmenter is used.
+    mask_score: float | None = None
 
 
 def _box_iou(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> float:
@@ -578,7 +580,7 @@ class Sam2MaskRefiner:
             self.predictor.set_image(image)
             for det in detections:
                 box = np.array(det.bbox_xyxy, dtype=np.float32)[None, :]  # (1, 4)
-                masks, _scores, _ = self.predictor.predict(
+                masks, scores, _ = self.predictor.predict(
                     box=box,
                     multimask_output=False,
                 )
@@ -590,6 +592,12 @@ class Sam2MaskRefiner:
                     raise RuntimeError(f"Unexpected SAM2 mask shape: raw={np.asarray(masks).shape}, squeezed={mask.shape}")
 
                 det.mask = mask.astype(bool)
+                # Keep the predicted mask quality (IoU estimate) so downstream
+                # reliability scoring can weigh observations by mask confidence.
+                try:
+                    det.mask_score = float(np.asarray(scores).reshape(-1)[0])
+                except (TypeError, ValueError, IndexError):
+                    det.mask_score = None
 
 
         return detections

@@ -105,6 +105,7 @@ class ComposedRealBackend(PerceptionBackend):
                         mask=det.mask,
                         attributes=attrs,
                         keyframe_path=frame.image_path,
+                        mask_score=getattr(det, "mask_score", None),
                     )
                 )
 
@@ -209,6 +210,7 @@ class UnifiedPerceptionBackend(PerceptionBackend):
                         mask=det.mask,
                         attributes=attrs,
                         keyframe_path=frame.image_path,
+                        mask_score=getattr(det, "mask_score", None),
                     )
                 )
 

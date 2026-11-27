@@ -1,0 +1,84 @@
+{
+  "legacy": {
+    "n_questions": 8114,
+    "zero_item_rate": 0.1958343603648016,
+    "zero_matched_rate": 0.5494207542519103,
+    "zero_keyframe_rate": 0.1958343603648016,
+    "fallback_only_rate": 0.3535863938871087,
+    "avg_items": 20.903869854572346,
+    "avg_keyframe_paths": 48.8455755484348,
+    "videos_missing_graph": 0,
+    "raw_counts": {
+      "n_zero_items": 1589,
+      "n_zero_matched": 4458,
+      "n_zero_keyframes": 1589,
+      "n_fallback_only": 2869,
+      "items_total": 169614,
+      "keyframes_total": 396333,
+      "videos_missing_graph": 0
+    },
+    "by_category": {
+      "Ego-centric Position & Orientation Memory": {
+        "n": 2088,
+        "zero_matched_rate": 0.5522030651340997,
+        "zero_keyframe_rate": 0.23227969348659003
+      },
+      "Object Recall & Quantity Tracking": {
+        "n": 2790,
+        "zero_matched_rate": 0.510752688172043,
+        "zero_keyframe_rate": 0.16953405017921147
+      },
+      "Perceived Proximity & Reachability Memory": {
+        "n": 1473,
+        "zero_matched_rate": 0.5322471147318398,
+        "zero_keyframe_rate": 0.20773930753564154
+      },
+      "Embodied trajectory & Movement Memory": {
+        "n": 1763,
+        "zero_matched_rate": 0.6216676120249575,
+        "zero_keyframe_rate": 0.184344866704481
+      }
+    }
+  },
+  "improved": {
+    "n_questions": 8051,
+    "zero_item_rate": 0.05080114271519066,
+    "zero_matched_rate": 0.5458949198857285,
+    "zero_keyframe_rate": 0.05080114271519066,
+    "fallback_only_rate": 0.4950937771705378,
+    "avg_items": 25.44081480561421,
+    "avg_keyframe_paths": 133.2066823997019,
+    "videos_missing_graph": 5,
+    "raw_counts": {
+      "n_zero_items": 409,
+      "n_zero_matched": 4395,
+      "n_zero_keyframes": 409,
+      "n_fallback_only": 3986,
+      "items_total": 204824,
+      "keyframes_total": 1072447,
+      "videos_missing_graph": 5
+    },
+    "by_category": {
+      "Ego-centric Position & Orientation Memory": {
+        "n": 2076,
+        "zero_matched_rate": 0.5496146435452793,
+        "zero_keyframe_rate": 0.04046242774566474
+      },
+      "Object Recall & Quantity Tracking": {
+        "n": 2767,
+        "zero_matched_rate": 0.506685941452837,
+        "zero_keyframe_rate": 0.05565594506685941
+      },
+      "Perceived Proximity & Reachability Memory": {
+        "n": 1467,
+        "zero_matched_rate": 0.5303340149965917,
+        "zero_keyframe_rate": 0.034764826175869123
+      },
+      "Embodied trajectory & Movement Memory": {
+        "n": 1741,
+        "zero_matched_rate": 0.6168868466398622,
+        "zero_keyframe_rate": 0.06892590465249857
+      }
+    }
+  }
+}

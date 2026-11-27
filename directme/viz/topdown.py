@@ -34,6 +34,57 @@ def _node_color(node) -> str:
     return _COLOR_PALETTE.get(str(name).lower(), "#444444") if name else "#444444"
 
 
+def draw_trajectory(
+    ax,
+    ego_pose_timeline: list[dict[str, Any]],
+    *,
+    mark_chunk_boundaries: bool = True,
+    color_by_chunk: bool = True,
+    cmap_name: str = "turbo",
+):
+    """Overlay the ego trajectory (XZ plane) on an existing top-down axes.
+
+    Each timeline record is a ``pose_record_from_se3`` dict with
+    ``translation`` and optionally ``chunk_id``. When ``color_by_chunk`` is
+    set, segments are coloured by chunk id so chunk-boundary discontinuities
+    and per-chunk drift become visible; otherwise a single gray polyline is
+    drawn.
+    """
+    import matplotlib.pyplot as plt
+
+    pts = [
+        (float(r["translation"][0]), float(r["translation"][2]))
+        for r in ego_pose_timeline
+        if isinstance(r, dict) and r.get("translation")
+    ]
+    if len(pts) < 2:
+        return
+
+    if not color_by_chunk:
+        xs, zs = zip(*pts)
+        ax.plot(xs, zs, color="black", alpha=0.55, linewidth=1.2, zorder=2)
+        return
+
+    cmap = plt.get_cmap(cmap_name)
+    chunk_ids = [r.get("chunk_id") for r in ego_pose_timeline if isinstance(r, dict) and r.get("translation")]
+    unique_chunks = sorted({c for c in chunk_ids if c is not None})
+    lut = {c: cmap(i / max(len(unique_chunks) - 1, 1)) for i, c in enumerate(unique_chunks)}
+
+    for i in range(len(pts) - 1):
+        c0, c1 = chunk_ids[i], chunk_ids[i + 1]
+        color = lut.get(c1 if c1 is not None else c0, "gray")
+        ax.plot([pts[i][0], pts[i + 1][0]], [pts[i][1], pts[i + 1][1]],
+                color=color, alpha=0.8, linewidth=1.6, zorder=2)
+        if mark_chunk_boundaries and c0 is not None and c1 is not None and c0 != c1:
+            ax.scatter([pts[i + 1][0]], [pts[i + 1][1]], s=42, c="red",
+                       marker="x", zorder=4)
+            ax.annotate(
+                f"b:{c0}→{c1}", (pts[i + 1][0], pts[i + 1][1]),
+                fontsize=7, color="red", alpha=0.9, zorder=4,
+                xytext=(3, 3), textcoords="offset points",
+            )
+
+
 def render_topdown_map(
     graph: SceneGraph,
     current_pose: SE3 | None = None,

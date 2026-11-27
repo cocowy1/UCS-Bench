@@ -111,3 +111,9 @@ conda-env/
 # IDE
 .vscode/
 .idea/
+
+# packaged scene-graph release (6.5G, hosted on HuggingFace/Zenodo, not git)
+/release/
+
+# local experiment outputs (cited diagnostics artifacts are force-added)
+/ucsbench_output/
