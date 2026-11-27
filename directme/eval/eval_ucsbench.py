@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import json
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"  # Force a specific GPU to avoid the default "auto" picking the wrong one
+# Respect an externally-set CUDA_VISIBLE_DEVICES (e.g. for multi-GPU sharding);
+# only pin GPU 0 when nothing is set.
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
 import sys
 import re
 from tqdm.auto import tqdm
